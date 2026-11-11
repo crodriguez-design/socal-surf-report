@@ -15,8 +15,8 @@ Faces ~220° (SSW). Offshore wind = NE/N/E. Jetty-assisted beach break: fast lef
 |---|---|---|---|---|---|
 | **Perfect** | S/SSW 175–205°, or W 260–280° + S combo | 13–18 s | 4–6 ft | 2–4 ft, rising | NE/N/E ≤10 kt, or glassy |
 | **Good** | 165–215° or 255–285° | 11–20 s | 3–7 ft | 1–4.5 ft | Offshore, or onshore ≤6 kt |
-| **Mid / Fun** | 160–290° | 9–20 s | 2–3 or 7–8 ft | 0–5.5 ft | Onshore 6–12 kt |
-| **Don't Go / Poor** | >295° (NW blocked) or <155° | <8 s | <1.5 or >8–9 ft (closeouts) | <0 or >5.5 ft | Onshore >12 kt |
+| **Mid / Fun** | 160–290° | 9–20 s | 2–3 or 7–8 ft | 0–5.5 ft | Onshore 4–5 kt (≤6 mph) |
+| **Don't Go / Poor** | >295° (NW blocked) or <155° | <8 s | <1.5 or >8–9 ft (closeouts) | <0 or >5.5 ft | **Onshore over 6 mph (5.2 kt)** — your call, 2026-11-11 |
 
 - Catalina sits ~222–256° from here *(est. from map bearings)*: short-period swell from that arc loses ~40%; long period wraps.
 - Very long-period S (17–20 s, ~3.5 ft deep water) closes out much of Newport.
@@ -59,8 +59,8 @@ Faces ~250° (WSW). Offshore = E/ENE. Sandbar beach break and the South Bay's sw
 |---|---|---|---|---|---|
 | **Perfect** | W–WNW 265–295° + SSW–SW 200–225° combo | 13–17 s | 5–8 ft | 1.5–3.5 ft, rising | E/ENE ≤10 kt or glassy |
 | **Good** | WSW–NW 245–305°, or SW 215–240° | 11–16 s | 4–6 ft | 1–4.5 ft | Offshore <12 kt, or any <6 kt |
-| **Mid / Fun** | 200–310° | 9–12 s | 3–4 ft (or 6–10 ft walling) | 0–5.5 ft | Onshore/cross 6–10 kt |
-| **Don't Go / Poor** | <195° (Palos Verdes), >315° (islands), pure wind swell | <8 s | <2.5 or >10 ft | <0 or >5.5 ft | Onshore ≥10 kt, or offshore >20 kt |
+| **Mid / Fun** | 200–310° | 9–12 s | 3–4 ft (or 6–10 ft walling) | 0–5.5 ft | Onshore/cross 4–5 kt (≤6 mph) |
+| **Don't Go / Poor** | <195° (Palos Verdes), >315° (islands), pure wind swell | <8 s | <2.5 or >10 ft | <0 or >5.5 ft | **Onshore over 6 mph (5.2 kt)** — your call, 2026-11-11; or offshore >20 kt |
 
 - A swell from one direction walls up ("Great Wall of El Porto"); combos create the "holes".
 - "Even a light onshore ruins the surf" (surf-forecast.com reviews). The sea breeze typically arrives late morning *(est.)*.

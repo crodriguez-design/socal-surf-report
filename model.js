@@ -54,7 +54,9 @@ const SPOTS = [
       period: { perfect: [13,18], good: [11,20], mid: [9,22] },
       height: { perfect: [4,6],   good: [3,7],   mid: [2,8] },        // face ft; >8 = closeouts
       tide:   { perfect: [2,4],   good: [1,4.5], mid: [0,5.5], prefer: "rising" },
-      wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 6, mid: 12 } },
+      // 2026-11-11, from your experience: any onshore over 6 mph (5.2 kt) = Don't Go.
+      // Under 4 kt counts as glassy; 4–5.2 kt onshore = Mid / Fun at best.
+      wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },
     },
     rainSensitive: true,
     tideStation: "9410580",   // Newport Bay Entrance, Corona del Mar
@@ -104,7 +106,8 @@ const SPOTS = [
       height: { perfect: [5,8],   good: [4,8],   mid: [3,10] },
       tide:   { perfect: [1.5,3.5], good: [1,4.5], mid: [0,5.5], prefer: "rising" },
       // "Even a light onshore ruins it" → strict onshore limits; very strong offshore is hard to paddle into.
-      wind:   { offshore: { perfect: 10, good: 12, mid: 20 }, onshore: { good: 4, mid: 9 } },
+      // 2026-11-11, from your experience: any onshore over 6 mph (5.2 kt) = Don't Go.
+      wind:   { offshore: { perfect: 10, good: 12, mid: 20 }, onshore: { good: 4, mid: 5.2 } },
     },
     comboNeeded: true,        // no combo + >6 ft → size capped at Mid ("Great Wall of El Porto")
     rainSensitive: true,
