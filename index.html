@@ -188,6 +188,12 @@ footer{padding:8px 0 40px;font-size:12px;color:var(--faint);line-height:1.6}
 .err{color:var(--dontgo)}
 .skeleton{height:260px;border-radius:var(--radius);background:linear-gradient(90deg,var(--surface),var(--surface-2),var(--surface));background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{to{background-position:-200% 0}}
+/* slide-in when switching spots (swipe or tab) */
+#app.in-next{animation:inNext .24s ease-out}
+#app.in-prev{animation:inPrev .24s ease-out}
+@keyframes inNext{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes inPrev{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ #app.in-next,#app.in-prev{animation:none} }
 </style>
 </head>
 <body>
@@ -1004,7 +1010,53 @@ function tideChart(spot, d){
 /* ============================ wiring ============================ */
 function tabs(){
   $("#tabs").innerHTML = SPOTS.map(s=>`<button class="tab ${s.id===prefs.spot?"on":""}" data-id="${s.id}">${s.name}</button>`).join("");
-  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{ prefs.spot=b.dataset.id; store.set("surf.spot",prefs.spot); tabs(); show(); });
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>goTo(b.dataset.id));
+  $(".tab.on")?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+}
+
+/* Switch spot. dir = +1 (next) / -1 (previous) picks the slide-in direction. */
+function goTo(id, dir){
+  const from = SPOTS.findIndex(s => s.id === prefs.spot), to = SPOTS.findIndex(s => s.id === id);
+  if(to < 0 || to === from) return;
+  dir = dir ?? (to > from ? 1 : -1);
+  prefs.spot = id; store.set("surf.spot", id);
+  tabs();
+  const app = $("#app");
+  app.classList.remove("in-next", "in-prev"); void app.offsetWidth;   // restart the animation
+  app.classList.add(dir > 0 ? "in-next" : "in-prev");
+  if(window.scrollY > 120) window.scrollTo({ top: 0 });
+  show();
+}
+
+/* ---------- swipe between spots (phones) ----------
+   Finger right→left = next spot, left→right = previous; wraps around.
+   Ignored when the swipe starts on things that scroll or drag sideways
+   themselves (forecast timeline, slider, day cards, spot tabs).
+   SWIPE.min = how far (px) the finger must travel; SWIPE.ratio = how much
+   more horizontal than vertical it must be (so normal scrolling never switches). */
+const SWIPE = { min: 60, ratio: 1.6, maxMs: 700, ignore: "#sc-svg, #sc-range, .days, .tabs, select, input, button" };
+let touch0 = null;
+document.addEventListener("touchstart", e => {
+  if(e.touches.length !== 1 || e.target.closest(SWIPE.ignore)) { touch0 = null; return; }
+  const t = e.touches[0]; touch0 = { x: t.clientX, y: t.clientY, t: Date.now() };
+}, { passive: true });
+document.addEventListener("touchend", e => {
+  if(!touch0) return;
+  const t = e.changedTouches[0], dx = t.clientX - touch0.x, dy = t.clientY - touch0.y, dt = Date.now() - touch0.t;
+  touch0 = null;
+  if(Math.abs(dx) < SWIPE.min || Math.abs(dx) < SWIPE.ratio*Math.abs(dy) || dt > SWIPE.maxMs) return;
+  const i = SPOTS.findIndex(s => s.id === prefs.spot), n = SPOTS.length;
+  const step = dx < 0 ? 1 : -1;                                  // finger moved left → next spot
+  goTo(SPOTS[(i + step + n) % n].id, step);
+}, { passive: true });
+
+/* Load the other spots in the background so swiping is instant. */
+let prefetching = false;
+function prefetch(){
+  if(prefetching) return; prefetching = true;
+  Promise.all(SPOTS.filter(s => !cache[s.id]).map(s =>
+    loadSpot(s).then(raw => { if(!cache[s.id]) cache[s.id] = { at: Date.now(), raw }; }).catch(() => {})
+  )).finally(() => prefetching = false);
 }
 async function show(force){
   const spot = SPOTS.find(s=>s.id===prefs.spot) || SPOTS[0];
@@ -1016,6 +1068,7 @@ async function show(force){
   if(spot.id !== prefs.spot) return;
   try { render(spot, build(spot, cache[spot.id].raw)); }
   catch(e){ console.error(e); $("#app").innerHTML = `<div class="card err">Something went wrong drawing ${spot.name}: ${e.message}</div>`; }
+  prefetch();
 }
 for(const [id,key,sk] of [["#unitH","h","surf.h"],["#unitW","w","surf.w"]]){
   $(id).value = prefs[key];
