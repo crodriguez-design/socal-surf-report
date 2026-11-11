@@ -6,8 +6,8 @@
      updates show up on the next open.
    - Forecast data is saved by the page itself (localStorage), not here.
    When you change this file, bump VERSION so phones drop the old copy. */
-const VERSION = "surf-v4";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest",
+const VERSION = "surf-v5";
+const SHELL = ["./", "./index.html", "./model.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-32.png"];
 
 self.addEventListener("install", e => {
