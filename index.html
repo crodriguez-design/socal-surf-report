@@ -207,6 +207,51 @@ header{padding-top:env(safe-area-inset-top)}
 .hours-day{top:calc(96px + env(safe-area-inset-top))}
 footer{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 .offline{border-color:color-mix(in srgb,var(--cross) 45%,var(--line));background:color-mix(in srgb,var(--cross) 8%,var(--surface));font-size:14px}
+/* ---------- Where should I go? ---------- */
+.where{padding:12px 12px 6px}
+.where .wh,.where .wr{display:grid;grid-template-columns:minmax(0,1fr) 104px 104px;gap:8px;align-items:center}
+.where .wh{padding:0 6px 6px;font-size:11px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
+.where .wr{width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;
+  padding:9px 6px;border-top:1px solid var(--line);border-radius:10px}
+.where .wr.cur{background:var(--surface-2)}
+.where .wn{font-weight:700;font-size:15px}
+.wc{display:flex;align-items:center;gap:7px;min-width:0}
+.wc span:last-child{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.wc b{font-size:14px;white-space:nowrap}
+.wc em{font-style:normal;font-size:11.5px;font-weight:650;color:var(--c);white-space:nowrap}
+.wc .star{font-style:normal;color:var(--c);margin-left:4px}
+
+/* ---------- session log ---------- */
+#logFab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:6;
+  border:0;border-radius:999px;padding:12px 16px;font:inherit;font-weight:700;font-size:14px;
+  color:var(--bg);background:var(--ocean);box-shadow:0 6px 20px rgba(0,0,0,.45);cursor:pointer}
+dialog#logDlg{width:min(560px,100vw - 24px);max-height:calc(100dvh - 40px);overflow:auto;border:1px solid var(--line);border-radius:20px;
+  background:var(--surface);color:var(--ink);padding:16px}
+dialog#logDlg::backdrop{background:rgba(0,0,0,.6)}
+.lg-tabs{display:flex;gap:6px;margin-bottom:12px}
+.lg-tabs button{flex:1;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:10px;padding:8px;font:inherit;font-size:14px;cursor:pointer}
+.lg-tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:650}
+#lgForm label{display:block;font-size:12px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:10px 0 4px}
+#lgForm input,#lgForm select,#lgForm textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--surface-2);
+  border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+#lgForm textarea{min-height:90px;resize:vertical}
+#lgForm input[type=range]{padding:0;accent-color:var(--ocean);background:transparent;border:0}
+.lg-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lg-score{display:flex;align-items:center;gap:12px}
+.lg-score output{font-size:22px;font-weight:800;min-width:2ch;text-align:right}
+.lg-actions{display:flex;gap:8px;margin:14px 0 4px}
+.btn{flex:1;font:inherit;font-weight:650;font-size:15px;border-radius:12px;padding:11px;cursor:pointer;border:1px solid var(--line);background:var(--surface-2);color:var(--ink)}
+.btn.primary{background:var(--ocean);border-color:var(--ocean);color:var(--bg)}
+.btn:disabled{opacity:.45;cursor:default}
+.lg-item{background:var(--surface-2);border-radius:12px;padding:10px 12px;margin-top:8px}
+.lg-item.sent{opacity:.7}
+.lg-item pre{margin:0;white-space:pre-wrap;font:inherit;font-size:13px;line-height:1.5}
+.lg-meta{font-size:12px;color:var(--faint);margin-top:6px}
+.link{background:none;border:0;color:var(--ocean);font:inherit;padding:0;cursor:pointer}
+#toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;
+  background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:14px;font-weight:650;transition:.2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1;transform:translateX(-50%)}
+main{padding-bottom:70px}   /* room so the floating button never covers the last card */
 </style>
 </head>
 <body>
@@ -233,6 +278,29 @@ footer{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
   Buoys: <a href="https://cdip.ucsd.edu/" target="_blank" rel="noopener">CDIP / Scripps</a>.<br>
   Surf heights and ratings are this page's own estimates from model data, rated against each spot's researched criteria (spot-guide.md).
 </footer>
+
+<!-- Session log: floating button + sheet -->
+<button id="logFab" aria-label="Log a surf session">＋ Log surf</button>
+<dialog id="logDlg" aria-label="Surf session log">
+  <div class="lg-tabs"><button data-view="form" class="on">Log a surf</button><button data-view="list">My sessions</button></div>
+  <form id="lgForm">
+    <label for="lgSpot">Spot</label><select id="lgSpot"></select>
+    <div class="lg-row">
+      <div><label for="lgStart">From</label><input id="lgStart" type="time" required></div>
+      <div><label for="lgEnd">To</label><input id="lgEnd" type="time" required></div>
+    </div>
+    <label for="lgDate">Date</label><input id="lgDate" type="date" required>
+    <label for="lgSize">How big was it really?</label>
+    <input id="lgSize" placeholder="e.g. 3–4, or chest high" autocomplete="off">
+    <label for="lgScore">Your score</label>
+    <div class="lg-score"><input id="lgScore" type="range" min="1" max="10" step="1" value="5"><output id="lgScoreV">5</output></div>
+    <label for="lgNotes">Notes</label>
+    <textarea id="lgNotes" placeholder="Closeouts? Wind change? Crowd? Tide filled in? — tap the mic on your keyboard to talk"></textarea>
+    <div class="lg-actions"><button type="button" class="btn" id="lgCancel">Cancel</button><button type="submit" class="btn primary">Save session</button></div>
+  </form>
+  <div id="lgList" hidden></div>
+</dialog>
+<div id="toast" role="status"></div>
 
 <script>
 /* =====================================================================
@@ -273,8 +341,8 @@ const SPOTS = [
      your session reports come in.
      ------------------------------------------------------------------ */
   {
-    id: "54th", name: "54th St, Newport",
-    lat: 33.6300, lon: -117.9560,
+    id: "54th", name: "54th St, Newport", short: "54th St",
+    lat: 33.6205, lon: -117.9478,    // beach end of 54th St (was ~1.3 km off, by the river mouth)
     facing: 220,              // SSW-facing; offshore = NE
     // Exposure for the HEIGHT estimate. W kept fairly high after a 2026-11-11 cam check (W 275° @12s → 4–6 ft).
     swellWindow: [[150,0],[160,.4],[175,.9],[185,1],[210,1],[225,.85],[255,.75],[270,.7],[285,.45],[295,.15],[305,0]],
@@ -291,11 +359,12 @@ const SPOTS = [
     rainSensitive: true,
     tideStation: "9410580",   // Newport Bay Entrance, Corona del Mar
     buoy: "213", buoyName: "San Pedro South",      // CDIP station (= NDBC 46253)
+    mop: "OC450", mopCalib: 1.15,   // CDIP nearshore point off 54th; +15% for jetty focusing (2026-11-11 cam check: 4–6 ft)
     notes: "Jetty-assisted beach break. Fast lefts off the north side of the groins on S swells, better rights on W swells. Minus tides go sand-sucking and closey; 5 ft+ highs get fat with backwash. Jetties hold up in light onshore better than the open beach.",
     other: ["Short-period swell from 225–255° is shadowed by Catalina", "Very long-period S (17–20 s) can close out much of Newport", "Crowded, can be aggressive", "Poor water quality after rain"],
   },
   {
-    id: "malibu", name: "Malibu (1st / 2nd / 3rd Point)",
+    id: "malibu", name: "Malibu (1st / 2nd / 3rd Point)", short: "Malibu",
     lat: 34.0353, lon: -118.6785,
     facing: 190,              // S-facing right point; offshore = N/NE (NW is side-offshore)
     swellWindow: [[145,0],[160,.5],[180,.9],[190,1],[225,1],[240,.8],[255,.55],[270,.35],[285,.15],[300,0]],
@@ -317,11 +386,12 @@ const SPOTS = [
     rainSensitive: true,      // lagoon outflow
     tideStation: "9410840",   // Santa Monica
     buoy: "103", buoyName: "Topanga Nearshore",    // CDIP station (= NDBC 46268)
+    mop: "L0905", mopCalib: 0.9,    // CDIP nearshore point off the points; −10%: 1st Pt sits inside (2026-11-11: ~2–3 ft)
     notes: "Cobblestone right point. 1st Pt is the soft, consistent longboard wall; 2nd is short and hollow; 3rd is the fastest outside section. High tide (5 ft+) fills in and fats out.",
     other: ["2nd Pt unmakeable on low tide", "Points connect at ~6 ft+ on 15 s+ S/SSW", "Lagoon sand can create a closeout section mid-point", "Ultra crowded", "Stay out ~72 h after rain (lagoon outflow)"],
   },
   {
-    id: "elporto", name: "El Porto, Manhattan Beach",
+    id: "elporto", name: "El Porto, Manhattan Beach", short: "El Porto",
     lat: 33.8990, lon: -118.4195,
     facing: 250,              // WSW-facing; offshore = E/ENE
     swellWindow: [[190,0],[200,.35],[215,.55],[235,.75],[250,.9],[265,1],[295,1],[305,.7],[315,.3],[325,0]],
@@ -339,6 +409,7 @@ const SPOTS = [
     rainSensitive: true,
     tideStation: "9410840",   // Santa Monica
     buoy: "028", buoyName: "Santa Monica Bay",     // CDIP station (= NDBC 46221)
+    mop: "L0575", mopCalib: 1.0,    // CDIP nearshore point off El Porto (2026-11-11 cam check: 4–6 ft, matched as-is)
     notes: "Open sandbar beach break and the South Bay's swell magnet — usually 1–2 ft bigger than neighbours. Look for the 'holes' between closeouts. Sea breeze usually by late morning. Rippy on low tide.",
     other: ["Single-direction swell = closeouts; combos make the peaks", "Sandbars shift (beach nourishment has hurt it before)", "Busy when good, little localism", "Storm-drain runoff after rain"],
   },
@@ -429,13 +500,14 @@ async function loadSpot(spot){
   const wxURL = `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m&daily=sunrise,sunset,precipitation_sum&precipitation_unit=inch&past_days=3&wind_speed_unit=kn&temperature_unit=fahrenheit&timezone=${tz}&forecast_days=${DAYS+1}`;
   const today = laNowKey().slice(0,10).replace(/-/g,"");
   const tideBase = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&datum=MLLW&station=${spot.tideStation}&time_zone=lst_ldt&units=english&format=json&application=surf_dashboard&begin_date=${today}&range=${(DAYS+1)*24}`;
-  const [marine, wx, tideH, tideHL, buoy] = await Promise.all([
+  const [marine, wx, tideH, tideHL, buoy, mop] = await Promise.all([
     getJSON(marineURL), getJSON(wxURL),
     getJSON(tideBase+"&interval=h").catch(e=>({error:e.message})),
     getJSON(tideBase+"&interval=hilo").catch(e=>({error:e.message})),
     loadBuoy(spot.buoy, spot.buoyName),
+    loadMop(spot.mop),
   ]);
-  return { marine, wx, tideH, tideHL, buoy };
+  return { marine, wx, tideH, tideHL, buoy, mop };
 }
 
 /* Observed buoy, from CDIP (Scripps) — the same buoys NDBC republishes, but CDIP's
@@ -461,6 +533,49 @@ async function loadBuoy(id, name){
   }
 }
 
+/* =====================================================================
+   CDIP NEARSHORE MODEL (MOP) — Scripps' wave model run to points every
+   ~100 m along the SoCal coast at 10 m depth. It already accounts for
+   Channel Islands shadowing and seafloor refraction, so it's a much better
+   starting point for surf size than the offshore model.
+   Find a point: cdip.ucsd.edu → MOP, or ask Claude for the nearest label.
+   One request per spot: 3-hourly Hs / Tp / Dp for ~10 days.
+   ===================================================================== */
+async function loadMop(site){
+  if(!site) return null;
+  try {
+    const url = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${site}_forecast.nc.ascii?waveTime,waveHs,waveTp,waveDp`;
+    const txt = await (await fetch(url, { signal: AbortSignal.timeout(10000) })).text();
+    const arr = k => { const m = txt.match(new RegExp(`\\n${k}\\[\\d+\\]\\n([^\\n]+)`)); return m ? m[1].split(",").map(Number) : null; };
+    const t = arr("waveTime"), hs = arr("waveHs"), tp = arr("waveTp"), dp = arr("waveDp");
+    if(!t || !hs || !tp || t.length !== hs.length) return null;
+    return { site, t, hs, tp, dp };
+  } catch { return null; }
+}
+/* LA-local hour key "YYYY-MM-DDTHH" → epoch seconds (offset from the marine API) */
+const keyEpoch = (k, offsetSec) => Date.UTC(+k.slice(0,4), +k.slice(5,7)-1, +k.slice(8,10), +k.slice(11,13))/1000 - (offsetSec ?? -28800);
+/* Linear interpolation of the 3-hourly MOP series to one moment. */
+function mopAt(mop, ts){
+  if(!mop || !mop.t?.length || ts < mop.t[0] || ts > mop.t[mop.t.length-1]) return null;
+  let j = mop.t.findIndex(x => x >= ts); if(j <= 0) j = 1;
+  const f = (ts - mop.t[j-1]) / (mop.t[j] - mop.t[j-1]);
+  const lerp = a => a[j-1] + (a[j]-a[j-1])*f;
+  const hs = lerp(mop.hs), tp = f < .5 ? mop.tp[j-1] : mop.tp[j];   // period: nearest, not blended
+  return hs > 0 && tp > 0 ? { hs, tp, dp: f < .5 ? mop.dp?.[j-1] : mop.dp?.[j] } : null;
+}
+/* MOP Hs at 10 m depth → typical set face height (ft):
+   1) un-shoal to deep-water height with linear wave theory,
+   2) breaking height with Komar & Gaughan,
+   3) × SET_FACTOR because surfers call size by the sets, not the average (Hs). */
+const SET_FACTOR = 1.3;
+function mopFaceFt(hs10, tp, depth = 10){
+  const w = 2*Math.PI/tp; let k = w*w/9.81;
+  for(let n=0;n<50;n++) k = w*w/(9.81*Math.tanh(k*depth));            // dispersion relation
+  const cg = 0.5*(1 + 2*k*depth/Math.sinh(2*k*depth)) * (w/k), cg0 = 9.81*tp/(4*Math.PI);
+  const H0 = hs10 / Math.sqrt(cg0/cg);                                  // shoaling coefficient
+  return breaker(H0, tp) * M2FT * SET_FACTOR;
+}
+
 /* ============================ surf height estimate ============================
    1. Each swell train is scaled by the spot's exposure to its direction.
    2. Breaking height per train, Komar & Gaughan (1972):
@@ -480,7 +595,7 @@ function exposure(spot, dir){
 const breaker = (H, T) => (H>0 && T>0) ? 0.39 * Math.pow(9.81,0.2) * Math.pow(T*H*H, 0.4) : 0;
 
 /* ============================ rate one hour ============================ */
-function analyseHour(spot, m, i, wind, tide, trend, rain72){
+function analyseHour(spot, m, i, wind, tide, trend, rain72, mop){
   const C = spot.criteria;
 
   // ---- swell trains → estimated face height ----
@@ -498,7 +613,11 @@ function analyseHour(spot, m, i, wind, tide, trend, rain72){
     e2 += t.hb*t.hb; tW += t.hb*t.hb*t.T;
     if(t.kind !== "Wind waves") swellE += t.hb*t.hb;
   }
-  const hbFt = Math.sqrt(e2) * M2FT * (spot.calib ?? 1);
+  // Surf height: CDIP nearshore model when available (already includes island
+  // shadowing and seafloor), otherwise our own estimate from the offshore model.
+  let hbFt, sizeSource;
+  if(mop){ hbFt = mopFaceFt(mop.hs, mop.tp) * (spot.mopCalib ?? 1); sizeSource = "CDIP nearshore"; }
+  else   { hbFt = Math.sqrt(e2) * M2FT * (spot.calib ?? 1);        sizeSource = "offshore estimate"; }
   const surfLo = hbFt*0.8, surfHi = hbFt*1.1, surfMid = hbFt*0.95;
   const domT = e2 ? tW/e2 : 0;                      // energy-weighted period at the break
   const cleanRatio = e2 ? swellE/e2 : 0;            // groundswell share vs local wind waves
@@ -594,7 +713,7 @@ function analyseHour(spot, m, i, wind, tide, trend, rain72){
       && (sec.minPeriod == null || domT >= sec.minPeriod),
   }));
 
-  return { trains, surfLo, surfHi, surfMid, domT, combo, factors: F, score, tier: tierOf(score), limiters, swellOnly, sections, windCls, windTag };
+  return { sizeSource, trains, surfLo, surfHi, surfMid, domT, combo, factors: F, score, tier: tierOf(score), limiters, swellOnly, sections, windCls, windTag };
 }
 
 /* ============================ build the 72-h model ============================ */
@@ -617,7 +736,7 @@ function build(spot, raw){
     const sr = sun[k.slice(0,10)];
     hours.push({ k, i, wind, tide: td, trend, air: w.temperature_2m?.[j], sst: m.sea_surface_temperature?.[i],
       daylight: sr ? (k >= sr[0] && k <= sr[1]) : true, raw: m,
-      a: analyseHour(spot, m, i, wind, td, trend, rain72) });
+      a: analyseHour(spot, m, i, wind, td, trend, rain72, mopAt(raw.mop, keyEpoch(k, raw.marine.utc_offset_seconds))) });
   });
   // best 2-hour daylight window per day
   const best = {};
@@ -728,7 +847,8 @@ function render(spot, d){
           <div>${pill(f.level)}</div>
           ${f.need ? `<div class="need">To move up → ${f.need}</div>` : ""}
         </div>`).join("")}
-      <p class="why-note">Score = 70% worst factor + 30% weighted average. A size-only rating would say
+      <p class="why-note">Size from: <b>${a.sizeSource === "CDIP nearshore" ? `CDIP nearshore model (point ${spot.mop})` : "offshore model estimate (CDIP nearshore unavailable)"}</b>.
+        Score = 70% worst factor + 30% weighted average. A size-only rating would say
         <b>${tierOf(a.swellOnly).name}</b> (${a.swellOnly.toFixed(1)}).</p>
     </details>
   </section>`;
@@ -772,7 +892,8 @@ function render(spot, d){
         <span style="color:var(--ocean);display:inline-flex">${arrowIcon(t.D)}</span>${compass(t.D)} ${Math.round(t.D)}°
         <span class="expo" title="${Math.round(t.exp*100)}% reaches the break"><i style="width:${Math.round(t.exp*100)}%"></i></span></span></div>`).join("")}
     <div class="row"><span class="l">Combined sea</span><span>${fmtH(cur.raw.wave_height[cur.i])}${hU()} · ${cur.raw.wave_period?.[cur.i]?.toFixed(0) ?? "–"}s</span></div>
-    <div class="note">Blue bar = share of that swell reaching the break after island / headland shadowing.</div>
+    <div class="note">Swell trains are from the offshore model (used for direction and period). Blue bar = share reaching the break.
+      Surf size comes from ${a.sizeSource === "CDIP nearshore" ? `the CDIP nearshore model, point ${spot.mop}` : "our offshore estimate"}.</div>
   </section>`;
 
   /* ---- buoy (observed, CDIP) ---- */
@@ -807,6 +928,7 @@ function render(spot, d){
   </details>`;
 
   $("#app").innerHTML = `
+    <div id="where">${whereCard()}</div>
     ${banner}${hero}${days}
     ${scrubber(spot, d)}
     <div class="grid2">
@@ -1020,6 +1142,144 @@ function tideChart(spot, d){
   <div class="hilo">${chips}</div>`;
 }
 
+/* =====================================================================
+   WHERE SHOULD I GO? — all spots side by side: right now, and tomorrow at
+   first light (average of the first two daylight hours). Tap a row to
+   open that spot. Fills in as the other spots load in the background.
+   ===================================================================== */
+function whereCard(){
+  const rows = SPOTS.map(s => {
+    const e = cache[s.id];
+    if(!e?.raw) return { s };
+    try {
+      const d = build(s, e.raw); if(!d.hours.length) return { s };
+      const now = d.hours[0];
+      const tmrw = addH(now.k.slice(0,10) + "T12", 24).slice(0,10);
+      const dawnH = d.hours.filter(h => h.k.startsWith(tmrw) && h.daylight).slice(0,2);
+      const dawn = dawnH.length ? { score: dawnH.reduce((x,h)=>x+h.a.score,0)/dawnH.length, a: dawnH[0].a, k: dawnH[0].k } : null;
+      return { s, now: { score: now.a.score, a: now.a }, dawn };
+    } catch { return { s }; }
+  });
+  const best = key => { const r = rows.filter(r => r[key]).sort((x,y)=>y[key].score-x[key].score)[0]; return r && r[key].score >= 4 ? r.s.id : null; };
+  const bNow = best("now"), bDawn = best("dawn");
+  const cell = (c, isBest) => !c ? `<div class="wc faint">…</div>` : (() => { const t = tierOf(c.score); return `
+    <div class="wc ${t.cls}"><span class="dot"></span><span><b>${fmtRange(c.a.surfLo, c.a.surfHi)} ${hU()}${isBest ? `<i class="star">★</i>` : ""}</b><em>${t.name}</em></span></div>`; })();
+  const dawnLbl = rows.find(r => r.dawn)?.dawn ? `Tmrw ${hourLabel(rows.find(r => r.dawn).dawn.k)}` : "Tmrw AM";
+  return `<section class="card where">
+    <div class="wh"><span class="h" style="margin:0">Where to go</span><span>Now</span><span>${dawnLbl}</span></div>
+    ${rows.map(r => `<button class="wr ${r.s.id === prefs.spot ? "cur" : ""}" data-go="${r.s.id}">
+      <span class="wn">${r.s.short || r.s.name}</span>${cell(r.now, r.s.id === bNow)}${cell(r.dawn, r.s.id === bDawn)}</button>`).join("")}
+  </section>`;
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) goTo(b.dataset.go); });
+
+/* =====================================================================
+   SESSION LOG — after a surf, tap "＋ Log surf", pick the spot and time,
+   give your own size and score, add notes (the keyboard mic works for
+   talking). The app attaches what IT predicted for that hour, so Claude can
+   compare. Sessions are saved on this phone; "Copy for Claude" / "Share"
+   puts them in a message you paste into Claude Code.
+   ===================================================================== */
+const LOG_KEY = "surf.log";
+const getLog = () => { try { return JSON.parse(localStorage.getItem(LOG_KEY)) || []; } catch { return []; } };
+const setLog = l => { try { localStorage.setItem(LOG_KEY, JSON.stringify(l)); } catch {} };
+
+/* What the app says for one spot at one LA-local hour key (today's earlier hours work too). */
+function conditionsAt(spot, raw, k){
+  const m = raw.marine.hourly, w = raw.wx.hourly;
+  const i = m.time.findIndex(t => keyOf(t) === k), j = w.time.findIndex(t => keyOf(t) === k);
+  if(i < 0 || j < 0) return null;
+  const tide = {}; (raw.tideH.predictions || []).forEach(p => tide[keyOf(p.t)] = +p.v);
+  const td = tide[k] ?? null, nx = tide[addH(k)];
+  const trend = (td != null && nx != null) ? (nx > td+.05 ? "↑" : nx < td-.05 ? "↓" : "→") : "";
+  const day = k.slice(0,10);
+  const rain72 = raw.wx.daily.time.reduce((s,d,ix) => d <= day && d > addH(day+"T00", -96).slice(0,10) ? s + (raw.wx.daily.precipitation_sum?.[ix] || 0) : s, 0);
+  const wind = { spd: w.wind_speed_10m?.[j], dir: w.wind_direction_10m?.[j], gust: w.wind_gusts_10m?.[j] };
+  const a = analyseHour(spot, m, i, wind, td, trend, rain72, mopAt(raw.mop, keyEpoch(k, raw.marine.utc_offset_seconds)));
+  return { k, a, wind, tide: td, trend, h: { a, wind, tide: td, trend, k } };
+}
+
+function logText(e){
+  const spot = SPOTS.find(s => s.id === e.spot);
+  const lines = [
+    `Surf log — ${spot ? spot.short || spot.name : e.spot} — ${dayLabel(e.date + "T12")} ${clock(e.date+" "+e.start)}–${clock(e.date+" "+e.end)}`,
+    `My call: ${e.size || "?"}${/ft|'|high|head|waist|knee|chest|over/i.test(e.size || "") ? "" : " ft"}, ${e.score}/10`,
+  ];
+  if(e.notes) lines.push(`Notes: ${e.notes}`);
+  lines.push(e.app ? `App said: ${e.app.tier} (${e.app.score}/10) — ${e.app.summary} Limited by: ${e.app.limits}.`
+                   : `App said: (no forecast saved for that time — please look it up)`);
+  return lines.join("\n");
+}
+
+function openLog(view = "form"){
+  const dlg = $("#logDlg"); if(!dlg) return;
+  const now = laNowKey(), mins = new Date().getMinutes();
+  const end = `${now.slice(11,13)}:${String(Math.floor(mins/15)*15).padStart(2,"0")}`;
+  const startH = (+now.slice(11,13) + 22) % 24;
+  $("#lgSpot").innerHTML = SPOTS.map(s => `<option value="${s.id}" ${s.id === prefs.spot ? "selected" : ""}>${s.short || s.name}</option>`).join("");
+  $("#lgDate").value = now.slice(0,10);
+  $("#lgStart").value = `${String(startH).padStart(2,"0")}:${end.slice(3)}`;
+  $("#lgEnd").value = end;
+  $("#lgSize").value = ""; $("#lgNotes").value = ""; $("#lgScore").value = 5; $("#lgScoreV").textContent = "5";
+  showLogView(view);
+  dlg.showModal();
+}
+function showLogView(view){
+  $("#lgForm").hidden = view !== "form";
+  $("#lgList").hidden = view !== "list";
+  document.querySelectorAll(".lg-tabs button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
+  if(view === "list") renderLogList();
+}
+function renderLogList(){
+  const log = getLog().slice().reverse(), unsent = log.filter(e => !e.sent).length;
+  $("#lgList").innerHTML = log.length ? `
+    <div class="lg-actions"><button class="btn primary" data-act="copyNew" ${unsent ? "" : "disabled"}>Copy ${unsent} new for Claude</button>
+      ${navigator.share ? `<button class="btn" data-act="shareNew" ${unsent ? "" : "disabled"}>Share…</button>` : ""}</div>
+    ${log.map(e => `<div class="lg-item ${e.sent ? "sent" : ""}"><pre>${logText(e).replace(/</g,"&lt;")}</pre>
+      <div class="lg-meta">${e.sent ? "✓ copied" : "not sent yet"} · <button class="link" data-act="del" data-id="${e.id}">delete</button></div></div>`).join("")}`
+    : `<p class="muted small">No sessions logged yet. After your next surf, tap “＋ Log surf”.</p>`;
+}
+async function sendText(text, share){
+  if(share && navigator.share){ try { await navigator.share({ text }); return true; } catch { return false; } }
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch { prompt("Copy this and paste it into Claude:", text); return true; }
+}
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2200); }
+
+function initLog(){
+  $("#logFab").onclick = () => openLog("form");
+  document.querySelectorAll(".lg-tabs button").forEach(b => b.onclick = () => showLogView(b.dataset.view));
+  $("#lgScore").oninput = e => $("#lgScoreV").textContent = e.target.value;
+  $("#lgCancel").onclick = () => $("#logDlg").close();
+  $("#lgForm").onsubmit = async ev => {
+    ev.preventDefault();
+    const spot = SPOTS.find(s => s.id === $("#lgSpot").value);
+    const e = { id: Date.now(), spot: spot.id, date: $("#lgDate").value, start: $("#lgStart").value, end: $("#lgEnd").value,
+      size: $("#lgSize").value.trim(), score: +$("#lgScore").value, notes: $("#lgNotes").value.trim(), sent: false };
+    // what the app predicted at the middle of the session
+    const [sh, sm] = e.start.split(":").map(Number), [eh, em] = e.end.split(":").map(Number);
+    let mid = Math.round(((sh*60+sm) + (eh*60+em)) / 2 / 60); mid = Math.min(23, Math.max(0, mid));
+    const k = `${e.date}T${String(mid).padStart(2,"0")}`;
+    const raw = cache[spot.id]?.raw || savedForecast(spot.id)?.raw;
+    const c = raw ? conditionsAt(spot, raw, k) : null;
+    if(c) e.app = { tier: c.a.tier.name, score: c.a.score.toFixed(1), surf: `${fmtRange(c.a.surfLo, c.a.surfHi)} ft`,
+      summary: summary(c.h), limits: c.a.limiters.length ? limText(c.a) : "nothing" };
+    const log = getLog(); log.push(e); setLog(log);
+    showLogView("list"); toast("Session saved");
+  };
+  $("#lgList").onclick = async ev => {
+    const b = ev.target.closest("[data-act]"); if(!b) return;
+    const log = getLog();
+    if(b.dataset.act === "del"){ if(confirm("Delete this session from your phone?")){ setLog(log.filter(e => e.id !== +b.dataset.id)); renderLogList(); } return; }
+    const unsent = log.filter(e => !e.sent);
+    const text = unsent.map(logText).join("\n\n");
+    if(await sendText(text, b.dataset.act === "shareNew")){
+      setLog(log.map(e => ({ ...e, sent: true }))); renderLogList();
+      toast(b.dataset.act === "shareNew" ? "Shared" : "Copied — paste it into Claude");
+    }
+  };
+}
+
 /* ============================ wiring ============================ */
 function tabs(){
   $("#tabs").innerHTML = SPOTS.map(s=>`<button class="tab ${s.id===prefs.spot?"on":""}" data-id="${s.id}">${s.name}</button>`).join("");
@@ -1047,7 +1307,7 @@ function goTo(id, dir){
    themselves (forecast timeline, slider, day cards, spot tabs).
    SWIPE.min = how far (px) the finger must travel; SWIPE.ratio = how much
    more horizontal than vertical it must be (so normal scrolling never switches). */
-const SWIPE = { min: 60, ratio: 1.6, maxMs: 700, ignore: "#sc-svg, #sc-range, .days, .tabs, select, input, button" };
+const SWIPE = { min: 60, ratio: 1.6, maxMs: 700, ignore: "#sc-svg, #sc-range, .days, .tabs, select, input, textarea, button, dialog" };
 let touch0 = null;
 document.addEventListener("touchstart", e => {
   if(e.touches.length !== 1 || e.target.closest(SWIPE.ignore)) { touch0 = null; return; }
@@ -1069,7 +1329,7 @@ function prefetch(){
   if(prefetching) return; prefetching = true;
   Promise.all(SPOTS.filter(s => !cache[s.id]).map(s =>
     loadSpot(s).then(raw => { if(!cache[s.id]){ cache[s.id] = { at: Date.now(), raw }; saveForecast(s.id, cache[s.id]); } }).catch(() => {})
-  )).finally(() => prefetching = false);
+  )).finally(() => { prefetching = false; const w = $("#where"); if(w) w.innerHTML = whereCard(); });
 }
 /* ---------- offline: keep the last good forecast for each spot on the phone ---------- */
 const savedKey = id => `surf.data.${id}`;
@@ -1116,7 +1376,7 @@ for(const [id,key,sk] of [["#unitH","h","surf.h"],["#unitW","w","surf.w"]]){
 }
 $("#refresh").onclick = () => show(true);
 if(!SPOTS.some(s=>s.id===prefs.spot)) prefs.spot = SPOTS[0].id;
-tabs(); show();
+tabs(); show(); initLog();
 
 /* Register the offline helper (sw.js) so the app opens without signal. */
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

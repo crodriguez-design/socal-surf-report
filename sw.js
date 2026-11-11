@@ -3,7 +3,7 @@
      always get the newest version; with no signal the last saved copy opens.
    - Forecast data is saved by the page itself (localStorage), not here.
    When you change this file, bump VERSION so phones drop the old copy. */
-const VERSION = "surf-v1";
+const VERSION = "surf-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-32.png"];
 
