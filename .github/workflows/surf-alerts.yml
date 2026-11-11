@@ -1,0 +1,30 @@
+# Checks the forecast twice a day and opens a GitHub issue (assigned to you)
+# when a spot looks Good or better in daylight within the next 48 hours.
+# Times are UTC: 13:00 ≈ 5–6 AM Pacific, 01:00 ≈ 5–6 PM Pacific.
+# To pause alerts: Actions → "Surf alerts" → ⋯ → Disable workflow.
+name: Surf alerts
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+    - cron: "0 1 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check forecast and alert
+        run: node alerts/check.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
