@@ -155,6 +155,19 @@ details.why[open] summary::after{content:"－"}
 .tier dt{color:var(--faint)} .tier dd{margin:0}
 ul.other{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:13.5px}
 
+/* ---------- timeline scrubber ---------- */
+#sc-svg{width:100%;height:auto;display:block;margin-top:10px;cursor:ew-resize;
+  touch-action:pan-y;                 /* vertical swipes still scroll the page; horizontal drags move the line */
+  user-select:none;-webkit-user-select:none}
+#sc-range{width:100%;margin:8px 0 0;accent-color:var(--ocean)}
+.sc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.sc-size{font-size:34px;font-weight:750;letter-spacing:-.02em;line-height:1.05}
+.sc-size small{font-size:15px;color:var(--muted);margin-left:3px;font-weight:600}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;padding:10px 12px;background:var(--surface-2);border-radius:12px}
+.sc-grid .k{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.sc-l{font-size:13px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;line-height:1.6}
+.sc-lim{font-size:12.5px;color:var(--faint);margin-top:8px;min-height:1.4em}
+
 svg text{font-family:inherit}
 footer{padding:8px 0 40px;font-size:12px;color:var(--faint)}
 .err{color:var(--dontgo)}
@@ -707,6 +720,7 @@ function render(spot, d){
 
   $("#app").innerHTML = `
     ${banner}${hero}${days}
+    ${scrubber(spot, d)}
     <div class="grid2">
       <section class="card"><div class="h">Wind vs. beach</div>${windCompass(spot, cur.wind, a)}</section>
       <section class="card"><div class="h">Tide · NOAA ${spot.tideStation}</div>${d.tideErr ? `<div class="err small">Tide data unavailable: ${d.tideErr}</div>` : tideChart(spot, d)}</section>
@@ -714,6 +728,126 @@ function render(spot, d){
     ${hourly}
     <div class="grid2">${swell}${buoy}</div>
     ${guide}`;
+  initScrub(d);
+}
+
+/* Smooth line through points (Catmull-Rom → cubic Bézier). Used by both tide charts. */
+function smoothPath(P){
+  let path = `M${P[0][0]},${P[0][1]}`;
+  for(let i=0;i<P.length-1;i++){
+    const p0 = P[i-1]||P[i], p1 = P[i], p2 = P[i+1], p3 = P[i+2]||p2;
+    path += ` C${p1[0]+(p2[0]-p0[0])/6},${p1[1]+(p2[1]-p0[1])/6} ${p2[0]-(p3[0]-p1[0])/6},${p2[1]-(p3[1]-p1[1])/6} ${p2[0]},${p2[1]}`;
+  }
+  return path;
+}
+
+/* =====================================================================
+   TIMELINE SCRUBBER — drag the line (or the slider) through the next
+   72 hours. Every track and the readout above follow the same hour:
+     rating strip · surf height bars · wind bars · tide curve
+   Layout constants live in SC; track heights in SC.tracks (viewBox units).
+   ===================================================================== */
+const SC = { W: 380, pl: 4, pr: 4, axis: 220,
+  tracks: { rate: [0, 10], surf: [20, 92], wind: [102, 140], tide: [150, 210] } };
+const TIER_COLOR = ["var(--dontgo)", "var(--mid)", "var(--good)", "var(--perfect)"];
+const WIND_COLOR = { "w-off": "var(--offshore)", "w-cross": "var(--cross)", "w-on": "var(--onshore)" };
+let scrubGeom = null;   // x positions + tide y positions for the cursor dot
+
+function scrubber(spot, d){
+  const H = d.hours, n = H.length, T = SC.tracks;
+  if(n < 2) return "";
+  const step = (SC.W - SC.pl - SC.pr)/(n-1), x = i => SC.pl + i*step;
+  const maxSurf = Math.max(4, ...H.map(h => h.a.surfHi));          // ft; bars scale to the biggest hour
+  const tides = H.map(h => h.tide).filter(v => v != null);
+  const tLo = Math.min(...tides) - .5, tHi = Math.max(...tides) + .5;
+  const yT = v => T.tide[1] - (v - tLo)/(tHi - tLo)*(T.tide[1]-T.tide[0]);
+  const bw = Math.max(1.2, step*0.72);
+  let s = "";
+
+  // night shading + day dividers + time labels
+  H.forEach((h,i) => {
+    const hr = +h.k.slice(11,13);
+    if(!h.daylight) s += `<rect x="${x(i)-step/2}" y="0" width="${step+.5}" height="${SC.axis-6}" fill="#000" opacity=".25"/>`;
+    if(hr === 0) s += `<line x1="${x(i)}" x2="${x(i)}" y1="0" y2="${SC.axis-6}" stroke="var(--line)"/>`;
+    if(hr === 12) s += `<text x="${x(i)}" y="${SC.axis+8}" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--muted)">${dayLabel(h.k,{weekday:"short"})}</text>`;
+    else if(hr === 6 || hr === 18) s += `<text x="${x(i)}" y="${SC.axis+8}" text-anchor="middle" font-size="9.5" fill="var(--faint)">${hourLabel(h.k)}</text>`;
+  });
+  // 1. rating strip
+  H.forEach((h,i) => s += `<rect x="${x(i)-step/2}" y="${T.rate[0]}" width="${step+.5}" height="${T.rate[1]}" fill="${TIER_COLOR[TIERS.indexOf(h.a.tier)]}"/>`);
+  // 2. surf height bars
+  H.forEach((h,i) => { const hh = h.a.surfMid/maxSurf*(T.surf[1]-T.surf[0]);
+    s += `<rect x="${x(i)-bw/2}" y="${T.surf[1]-hh}" width="${bw}" height="${hh}" rx="1" fill="var(--ocean)" opacity="${h.daylight ? .75 : .4}"/>`; });
+  // 3. wind bars (speed, colored by offshore / cross / onshore; 25 kt = full height)
+  H.forEach((h,i) => { if(h.wind.spd == null) return; const hh = Math.min(h.wind.spd,25)/25*(T.wind[1]-T.wind[0]);
+    s += `<rect x="${x(i)-bw/2}" y="${T.wind[1]-hh}" width="${bw}" height="${Math.max(hh,1)}" rx="1" fill="${WIND_COLOR[h.a.windCls]}" opacity="${h.daylight ? .85 : .45}"/>`; });
+  // 4. tide curve with this spot's Perfect band
+  const tideY = H.map(h => h.tide != null ? yT(h.tide) : null);
+  const P = tideY.map((y,i) => y == null ? null : [x(i), y]).filter(Boolean);
+  if(P.length > 1){
+    const band = spot.criteria.tide.perfect, b1 = Math.max(T.tide[0], yT(Math.min(band[1], tHi))), b0 = Math.min(T.tide[1], yT(Math.max(band[0], tLo)));
+    if(b0 > b1) s += `<rect x="${SC.pl}" y="${b1}" width="${SC.W-SC.pl-SC.pr}" height="${b0-b1}" fill="var(--perfect)" opacity=".10"/>`;
+    const path = smoothPath(P);
+    s += `<path d="${path} L${P[P.length-1][0]},${T.tide[1]} L${P[0][0]},${T.tide[1]} Z" fill="var(--ocean)" opacity=".18"/><path d="${path}" fill="none" stroke="var(--ocean)" stroke-width="2"/>`;
+  }
+  // track labels
+  const lbl = (y, t) => `<text x="${SC.pl+2}" y="${y}" font-size="9" font-weight="600" letter-spacing=".06em" fill="var(--faint)">${t}</text>`;
+  s += lbl(T.surf[0]+9, "SURF") + lbl(T.wind[0]+9, "WIND") + lbl(T.tide[0]+9, "TIDE");
+
+  scrubGeom = { x: H.map((_,i)=>x(i)), tideY, step, n };
+  return `<section class="card" id="scrub">
+    <div class="h">Drag through the forecast</div>
+    <div id="sc-read" aria-live="polite"></div>
+    <svg id="sc-svg" viewBox="0 0 ${SC.W} ${SC.axis+12}" role="img" aria-label="72-hour forecast timeline">
+      ${s}
+      <line id="sc-line" x1="0" x2="0" y1="0" y2="${SC.axis-6}" stroke="var(--ink)" stroke-width="1.5"/>
+      <circle id="sc-dot" cx="0" cy="0" r="4" fill="var(--ink)" stroke="var(--bg)" stroke-width="1.5"/>
+      <rect x="0" y="0" width="${SC.W}" height="${SC.axis}" fill="transparent"/>
+    </svg>
+    <input id="sc-range" type="range" min="0" max="${n-1}" value="0" aria-label="Forecast hour">
+  </section>`;
+}
+
+function scrubReadout(h, i){
+  const a = h.a, lv = TIERS.indexOf(a.tier);
+  return `
+    <div class="sc-top">
+      <div><div class="small muted">${dayLabel(h.k,{weekday:"short"})} ${hourLabel(h.k)}${i === 0 ? " · now" : ""}${h.daylight ? "" : " · dark"}</div>
+        <div class="sc-size">${fmtRange(a.surfLo, a.surfHi)}<small>${hU()}</small></div></div>
+      <div style="text-align:right">${pill(lv, a.tier.name)}<div class="small faint" style="margin-top:4px">${a.score.toFixed(1)}/10</div></div>
+    </div>
+    <div class="sc-grid">
+      <div><div class="k">Swell</div>
+        ${a.trains.map(t => `<div class="sc-l"><b>${fmtH(t.H)}${hU()}</b> ${t.T.toFixed(0)}s <span style="color:var(--ocean);display:inline-flex">${arrowIcon(t.D,12)}</span> ${compass(t.D)} ${Math.round(t.D)}°</div>`).join("")}</div>
+      <div><div class="k">Wind</div>
+        <div class="sc-l ${a.windCls}"><span style="color:var(--c);display:inline-flex">${arrowIcon(h.wind.dir,12)}</span> <b>${fmtW(h.wind.spd)} ${wU()}</b> ${compass(h.wind.dir)} · <span style="color:var(--c)">${a.windTag}</span></div>
+        <div class="k" style="margin-top:8px">Tide</div>
+        <div class="sc-l"><b>${h.tide != null ? fmtH(h.tide/M2FT) + " " + hU() : "–"}</b> ${h.trend === "↑" ? "rising" : h.trend === "↓" ? "falling" : h.trend === "→" ? "slack" : ""}</div></div>
+    </div>
+    <div class="sc-lim">${a.limiters.length ? "Limited by " + limText(a) : "Everything lines up"}</div>`;
+}
+
+function initScrub(d){
+  const svg = $("#sc-svg"), range = $("#sc-range"), read = $("#sc-read");
+  if(!svg || !scrubGeom) return;
+  const G = scrubGeom, line = $("#sc-line"), dot = $("#sc-dot");
+  let cur = -1;
+  const set = i => {
+    if(i === cur) return; cur = i;
+    const x = G.x[i];
+    line.setAttribute("x1", x); line.setAttribute("x2", x);
+    if(G.tideY[i] != null){ dot.setAttribute("cx", x); dot.setAttribute("cy", G.tideY[i]); dot.style.display = ""; } else dot.style.display = "none";
+    range.value = i;
+    read.innerHTML = scrubReadout(d.hours[i], i);
+  };
+  // pointer x (screen) → hour index (viewBox units)
+  const idxAt = e => { const r = svg.getBoundingClientRect(); const vx = (e.clientX - r.left)/r.width*SC.W;
+    return Math.max(0, Math.min(G.n-1, Math.round((vx - SC.pl)/G.step))); };
+  let dragging = false;
+  svg.addEventListener("pointerdown", e => { dragging = true; svg.setPointerCapture(e.pointerId); set(idxAt(e)); });
+  svg.addEventListener("pointermove", e => { if(dragging) set(idxAt(e)); });
+  ["pointerup","pointercancel"].forEach(t => svg.addEventListener(t, () => dragging = false));
+  range.addEventListener("input", e => set(+e.target.value));
+  set(0);
 }
 
 /* Wind compass: ocean half tinted blue, land half tinted sand, shoreline across the
@@ -770,11 +904,7 @@ function tideChart(spot, d){
   pts.forEach((p,i)=>{ const sr = d.sun[p.k.slice(0,10)]; if(sr && (p.k < sr[0] || p.k > sr[1])) night += `<rect x="${x(i)-step/2}" y="${pt0-8}" width="${step+.6}" height="${H-pb-pt0+8}" fill="#000" opacity=".22"/>`; });
   // smooth path (Catmull-Rom → cubic Bézier)
   const P = pts.map((p,i)=>[x(i), y(p.v)]);
-  let path = `M${P[0][0]},${P[0][1]}`;
-  for(let i=0;i<P.length-1;i++){
-    const p0 = P[i-1]||P[i], p1 = P[i], p2 = P[i+1], p3 = P[i+2]||p2;
-    path += ` C${p1[0]+(p2[0]-p0[0])/6},${p1[1]+(p2[1]-p0[1])/6} ${p2[0]-(p3[0]-p1[0])/6},${p2[1]-(p3[1]-p1[1])/6} ${p2[0]},${p2[1]}`;
-  }
+  const path = smoothPath(P);
   const area = `${path} L${P[P.length-1][0]},${H-pb} L${P[0][0]},${H-pb} Z`;
   // grid + labels
   let grid = "";
