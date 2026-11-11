@@ -265,6 +265,11 @@ body.on-overview .tabs{display:none}                 /* spot tabs only on the sp
 .ov-seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:650;padding:7px 14px;border-radius:9px;cursor:pointer}
 .ov-seg button.on{background:var(--ink);color:var(--bg)}
 .ov-upd{margin:10px 2px 6px}
+.ov-chips{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px;scrollbar-width:none}
+.ov-chips::-webkit-scrollbar{display:none}
+.ov-chips button{flex:none;border:0;border-radius:999px;padding:8px 14px;font:inherit;font-size:13.5px;font-weight:650;cursor:pointer;
+  background:var(--surface);color:var(--muted)}
+.ov-chips button.on{background:var(--ocean);color:var(--bg)}
 .ov-card{display:flex;align-items:stretch;gap:14px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
   background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 12px 14px 14px;margin-top:10px;position:relative}
 .ov-card:active{transform:scale(.99)}
@@ -751,6 +756,14 @@ function tideChart(spot, d){
    ===================================================================== */
 let view = "overview";                                   // "overview" | "spot"
 let ovMode = store.get("surf.ovmode", "now");            // "now" | "dawn"
+/* Regions (like Surfline's chips). Order follows the coast north → south. */
+const REGIONS = ["Santa Barbara / Ventura", "Malibu / North LA", "South Bay", "Orange County"];
+let ovRegion = store.get("surf.region", "All");
+const regionSpots = () => {
+  const list = ovRegion === "All" ? SPOTS : SPOTS.filter(s => s.region === ovRegion);
+  // within a region: along the coast, north/west → south/east (lon − lat grows down the coast)
+  return list.slice().sort((a,b) => (REGIONS.indexOf(a.region) - REGIONS.indexOf(b.region)) || ((a.lon - a.lat) - (b.lon - b.lat)));
+};
 
 function spotSnapshot(s){
   const e = cache[s.id];
@@ -771,7 +784,7 @@ function spotSnapshot(s){
 const ratingBar = lv => `<div class="ov-bar ${LEVEL[lv].cls}" aria-hidden="true">${[3,2,1,0].map(i => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</div>`;
 
 function overviewHTML(){
-  const snaps = SPOTS.map(spotSnapshot);
+  const snaps = regionSpots().map(spotSnapshot);
   const pick = sn => sn[ovMode];
   const loaded = snaps.filter(pick);
   const best = loaded.sort((x,y)=>pick(y).score-pick(x).score)[0];
@@ -804,6 +817,8 @@ function overviewHTML(){
   return `
     <div class="ov-head">
       <h1>Overview</h1>
+      <div class="ov-chips">${["All", ...REGIONS.filter(r => SPOTS.some(s => s.region === r))].map(r =>
+        `<button data-region="${r}" class="${r === ovRegion ? "on" : ""}">${r}</button>`).join("")}</div>
       <div class="ov-seg" role="tablist">
         <button data-ov="now" class="${ovMode === "now" ? "on" : ""}">Now</button>
         <button data-ov="dawn" class="${ovMode === "dawn" ? "on" : ""}">${firstDawn ? `Tomorrow ${hourLabel(firstDawn.h.k)}` : "Tomorrow AM"}</button>
@@ -818,8 +833,9 @@ function drawOverview(){ if(view !== "overview") return; $("#app").innerHTML = o
 
 /* Load every spot (fresh if older than 20 min; saved copy when offline), redrawing as each arrives. */
 async function showOverview(force){
+  if(force) _shared.clear();          // pull-to-refresh / ↻ = really fetch again
   drawOverview();
-  await Promise.all(SPOTS.map(async s => {
+  await Promise.all(regionSpots().map(async s => {
     const e = cache[s.id];
     if(!force && e && !e.offline && Date.now() - e.at < 20*60e3) return;
     try { cache[s.id] = { at: Date.now(), raw: await loadSpot(s) }; saveForecast(s.id, cache[s.id]); }
@@ -832,6 +848,8 @@ async function showOverview(force){
 document.addEventListener("click", e => {
   const seg = e.target.closest("[data-ov]");
   if(seg){ ovMode = seg.dataset.ov; store.set("surf.ovmode", ovMode); drawOverview(); return; }
+  const chip = e.target.closest("[data-region]");
+  if(chip){ ovRegion = chip.dataset.region; store.set("surf.region", ovRegion); showOverview(); return; }
   const b = e.target.closest("[data-go]");
   if(b) openSpot(b.dataset.go);
 });
@@ -963,7 +981,8 @@ function initLog(){
 
 /* ============================ wiring ============================ */
 function tabs(){
-  $("#tabs").innerHTML = SPOTS.map(s=>`<button class="tab ${s.id===prefs.spot?"on":""}" data-id="${s.id}">${s.name}</button>`).join("");
+  const list = regionSpots().some(s => s.id === prefs.spot) ? regionSpots() : SPOTS;
+  $("#tabs").innerHTML = list.map(s=>`<button class="tab ${s.id===prefs.spot?"on":""}" data-id="${s.id}">${s.short || s.name}</button>`).join("");
   document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>goTo(b.dataset.id));
   $(".tab.on")?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
 }
@@ -1002,9 +1021,10 @@ document.addEventListener("touchend", e => {
   const t = e.changedTouches[0], dx = t.clientX - touch0.x, dy = t.clientY - touch0.y, dt = Date.now() - touch0.t;
   touch0 = null;
   if(Math.abs(dx) < SWIPE.min || Math.abs(dx) < SWIPE.ratio*Math.abs(dy) || dt > SWIPE.maxMs) return;
-  const i = SPOTS.findIndex(s => s.id === prefs.spot), n = SPOTS.length;
+  const list = regionSpots().some(s => s.id === prefs.spot) ? regionSpots() : SPOTS;   // swipe within the chosen region
+  const i = list.findIndex(s => s.id === prefs.spot), n = list.length;
   const step = dx < 0 ? 1 : -1;                                  // finger moved left → next spot
-  goTo(SPOTS[(i + step + n) % n].id, step);
+  goTo(list[(i + step + n) % n].id, step);
 }, { passive: true });
 
 /* ---------- pull to refresh ----------
@@ -1057,7 +1077,7 @@ document.addEventListener("touchend", async () => {
 let prefetching = false;
 function prefetch(){
   if(prefetching) return; prefetching = true;
-  Promise.all(SPOTS.filter(s => !cache[s.id]).map(s =>
+  Promise.all(regionSpots().filter(s => !cache[s.id]).map(s =>
     loadSpot(s).then(raw => { if(!cache[s.id]){ cache[s.id] = { at: Date.now(), raw }; saveForecast(s.id, cache[s.id]); } }).catch(() => {})
   )).finally(() => { prefetching = false; drawOverview(); });
 }
@@ -1074,6 +1094,7 @@ function savedForecast(id){
 const agoText = ms => { const m = Math.round(ms/60000); return m < 60 ? `${m} min ago` : m < 48*60 ? `${Math.round(m/60)} h ago` : `${Math.round(m/1440)} days ago`; };
 
 async function show(force){
+  if(force) _shared.clear();
   const spot = SPOTS.find(s=>s.id===prefs.spot) || SPOTS[0];
   if(force || !cache[spot.id] || cache[spot.id].offline || Date.now() - cache[spot.id].at > 20*60e3){
     // keep the current view while refreshing the SAME spot; otherwise show the loading shimmer

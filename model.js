@@ -41,7 +41,7 @@ const SPOTS = [
      your session reports come in.
      ------------------------------------------------------------------ */
   {
-    id: "54th", name: "54th St, Newport", short: "54th St",
+    id: "54th", name: "54th St, Newport", short: "54th St", region: "Orange County",
     lat: 33.6205, lon: -117.9478,    // beach end of 54th St (was ~1.3 km off, by the river mouth)
     facing: 220,              // SSW-facing; offshore = NE
     // Exposure for the HEIGHT estimate. W kept fairly high after a 2026-11-11 cam check (W 275° @12s → 4–6 ft).
@@ -66,7 +66,7 @@ const SPOTS = [
     other: ["Short-period swell from 225–255° is shadowed by Catalina", "Very long-period S (17–20 s) can close out much of Newport", "Crowded, can be aggressive", "Poor water quality after rain"],
   },
   {
-    id: "malibu", name: "Malibu (1st / 2nd / 3rd Point)", short: "Malibu",
+    id: "malibu", name: "Malibu (1st / 2nd / 3rd Point)", short: "Malibu", region: "Malibu / North LA",
     lat: 34.0353, lon: -118.6785,
     facing: 190,              // S-facing right point; offshore = N/NE (NW is side-offshore)
     swellWindow: [[145,0],[160,.5],[180,.9],[190,1],[225,1],[240,.8],[255,.55],[270,.35],[285,.15],[300,0]],
@@ -94,7 +94,7 @@ const SPOTS = [
     other: ["2nd Pt unmakeable on low tide", "Points connect at ~6 ft+ on 15 s+ S/SSW", "Lagoon sand can create a closeout section mid-point", "Ultra crowded", "Stay out ~72 h after rain (lagoon outflow)"],
   },
   {
-    id: "elporto", name: "El Porto, Manhattan Beach", short: "El Porto",
+    id: "elporto", name: "El Porto, Manhattan Beach", short: "El Porto", region: "South Bay",
     lat: 33.8990, lon: -118.4195,
     facing: 250,              // WSW-facing; offshore = E/ENE
     swellWindow: [[190,0],[200,.35],[215,.55],[235,.75],[250,.9],[265,1],[295,1],[305,.7],[315,.3],[325,0]],
@@ -116,6 +116,340 @@ const SPOTS = [
     mop: "L0575", mopCalib: 1.0,    // CDIP nearshore point off El Porto (2026-11-11 cam check: 4–6 ft, matched as-is)
     notes: "Open sandbar beach break and the South Bay's swell magnet — usually 1–2 ft bigger than neighbours. Look for the 'holes' between closeouts. Sea breeze usually by late morning. Rippy on low tide.",
     other: ["Single-direction swell = closeouts; combos make the peaks", "Sandbars shift (beach nourishment has hurt it before)", "Busy when good, little localism", "Storm-drain runoff after rain"],
+  },
+  /* ===================== Added 2026-11-11 from your Surfline favorites =====================
+     Criteria from the research in research/*.md (many numbers are estimates — tune them with
+     your session logs). mopCalib starts at 1.0 for these: no camera check yet. */
+
+  /* ---------- Santa Barbara / Ventura (inside the Channel: W swell is king; islands block most S/SW) ---------- */
+  {
+    id: "rincon-cove", name: "Rincon (The Cove)", short: "Rincon Cove", region: "Santa Barbara / Ventura",
+    lat: 34.37290, lon: -119.47420, facing: 200,
+    swellWindow: [[130,0],[150,.15],[170,.15],[195,.05],[235,.1],[250,.6],[262,1],[278,1],[288,.6],[300,.25],[315,0]],
+    shadows: [{ dir: [195,250], cut: 0.3 }, { dir: [285,315], cut: 0.5 }],     // Channel Islands; Pt Conception
+    calib: 0.85, mop: "VE677", mopCalib: 0.7,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[260,280]], good: [[250,290]], mid: [[240,305]] },
+      period: { perfect: [12,15], good: [11,17], mid: [9,20] },
+      height: { perfect: [4,8], good: [3,10], mid: [2,12] },
+      tide:   { perfect: [0,2.5], good: [-0.5,3.5], mid: [-1.5,5], prefer: "falling" },
+      wind:   { offshore: { perfect: 12, good: 20, mid: 30 }, onshore: { good: 8, mid: 14 } },   // holds NW wind well
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9411270", buoy: "071", buoyName: "Harvest (Pt Conception)",
+    notes: "Inside section of Rincon: long cobblestone right, best on W swell at low/falling tide. Holds NW wind better than anything nearby.",
+    other: ["Basically flat in summer", "High tide + big swell runs the wave into the 101 boulders", "Rincon Creek bacteria after rain", "Extremely crowded on any real swell"],
+  },
+  {
+    id: "rincon-indicator", name: "Rincon (Indicator)", short: "Indicator", region: "Santa Barbara / Ventura",
+    lat: 34.37320, lon: -119.47950, facing: 220,
+    swellWindow: [[125,0],[145,.25],[170,.25],[195,.05],[235,.15],[248,.7],[260,1],[280,1],[290,.6],[305,.25],[320,0]],
+    shadows: [{ dir: [195,248], cut: 0.3 }, { dir: [285,320], cut: 0.5 }],
+    calib: 0.85, mop: "B0003", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[258,280]], good: [[248,290]], mid: [[240,305]] },
+      period: { perfect: [12,16], good: [11,18], mid: [9,20] },
+      height: { perfect: [6,10], good: [4,12], mid: [3,15] },                    // needs more size than the Cove
+      tide:   { perfect: [0.5,3.5], good: [-0.5,4.5], mid: [-1.5,6], prefer: "falling" },
+      wind:   { offshore: { perfect: 12, good: 20, mid: 28 }, onshore: { good: 6, mid: 12 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9411270", buoy: "071", buoyName: "Harvest (Pt Conception)",
+    notes: "Outer takeoff at the top of Rincon. Needs a solid W swell to break and connect toward the Cove; more tide-tolerant than the Cove. Small S swells give a few summer lefts.",
+    other: ["More wind-exposed than the Cove", "Waves shrink fast toward the inside", "Can't see it from the freeway"],
+  },
+  {
+    id: "ventura-point", name: "Ventura Point", short: "Ventura Pt", region: "Santa Barbara / Ventura",
+    lat: 34.27380, lon: -119.30420, facing: 205,
+    swellWindow: [[130,0],[145,.35],[185,.35],[195,.1],[245,.15],[255,.7],[265,1],[282,1],[292,.6],[305,.3],[320,0]],
+    shadows: [{ dir: [195,252], cut: 0.3 }, { dir: [285,320], cut: 0.5 }],
+    calib: 0.85, mop: "VE465", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[260,285]], good: [[250,295]], mid: [[150,305]] },
+      period: { perfect: [12,16], good: [10,18], mid: [8,20] },
+      height: { perfect: [4,8], good: [3,10], mid: [2,14] },
+      tide:   { perfect: [1,3.5], good: [0,4.5], mid: [-1,5.5], prefer: "rising" },
+      wind:   { offshore: { perfect: 12, good: 20, mid: 30 }, onshore: { good: 6, mid: 12 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9411270", buoy: "071", buoyName: "Harvest (Pt Conception)",
+    notes: "Cobble and sand right point at the Ventura River mouth, with the faster Pipe section at the top. Very consistent on W/NW swell and holds real size. Rocky entry and exit at high tide.",
+    other: ["Ventura River runoff after rain", "Strong currents when big", "Picks up S swell weakly through the Anacapa Passage"],
+  },
+  {
+    id: "c-street", name: "C Street (Ventura)", short: "C Street", region: "Santa Barbara / Ventura",
+    lat: 34.27330, lon: -119.29650, facing: 205,
+    swellWindow: [[130,0],[145,.35],[185,.35],[195,.1],[245,.15],[255,.65],[265,1],[282,1],[292,.55],[305,.25],[320,0]],
+    shadows: [{ dir: [195,252], cut: 0.3 }, { dir: [285,320], cut: 0.5 }],
+    calib: 0.85, mop: "VE463", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[258,285]], good: [[250,295]], mid: [[150,305]] },
+      period: { perfect: [11,15], good: [9,17], mid: [7,20] },
+      height: { perfect: [3,5], good: [2,7], mid: [1.5,9] },
+      tide:   { perfect: [1,3.5], good: [0,4.5], mid: [-1,6], prefer: "rising" },
+      wind:   { offshore: { perfect: 12, good: 18, mid: 28 }, onshore: { good: 6, mid: 12 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9411270", buoy: "071", buoyName: "Harvest (Pt Conception)",
+    notes: "The softer inside cove of the Ventura point toward the pier. Longboard and beginner friendly, fun when small; swamps or closes out sooner than the top of the point.",
+    other: ["Busiest lineup in the county", "Mushier at higher tide", "Runoff after rain"],
+  },
+  {
+    id: "ventura-harbor", name: "Ventura Harbor", short: "Ventura Harbor", region: "Santa Barbara / Ventura",
+    lat: 34.24508, lon: -119.26799, facing: 240,
+    swellWindow: [[125,0],[140,.4],[160,.7],[190,.7],[205,.35],[220,.15],[245,.2],[255,.7],[265,1],[280,1],[290,.5],[305,.2],[315,0]],
+    shadows: [{ dir: [205,252], cut: 0.35 }, { dir: [285,315], cut: 0.5 }],
+    calib: 0.85, mop: "VE414", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[160,195],[260,280]], good: [[150,280]], mid: [[135,295]] },   // S or W both work
+      period: { perfect: [12,17], good: [9,18], mid: [6,20] },
+      height: { perfect: [3,5], good: [2,6], mid: [1.5,8] },
+      tide:   { perfect: [1.5,4], good: [0.5,5], mid: [-0.5,6], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 25 }, onshore: { good: 5, mid: 10 } },
+    },
+    rainSensitive: true, crowd: "medium",
+    tideStation: "9411270", buoy: "071", buoyName: "Harvest (Pt Conception)",
+    notes: "Sand beach break with a jetty-groomed peak at South Jetty / Surfers Knoll. The region's best summer south-swell spot; also works on solid W swell. Closes out big and blows out sooner than the points.",
+    other: ["Best summer option in this region", "Rocks at the jetty", "Santa Clara River and harbor runoff after rain"],
+  },
+
+  /* ---------- Malibu / North LA ---------- */
+  {
+    id: "county-line", name: "County Line", short: "County Line", region: "Malibu / North LA",
+    lat: 34.05197, lon: -118.96087, facing: 190,
+    swellWindow: [[160,0],[175,.6],[190,.9],[230,1],[250,.7],[265,.5],[280,.9],[292,.8],[305,0]],
+    shadows: [{ dir: [250,275], cut: 0.5 }],                                    // Anacapa / Santa Cruz
+    calib: 0.85, mop: "VE020", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[270,295]], good: [[200,295]], mid: [[175,305]] },
+      period: { perfect: [13,18], good: [11,20], mid: [9,22] },
+      height: { perfect: [4,6], good: [3,7], mid: [2,9] },
+      tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5.5], prefer: null },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 25 }, onshore: { good: 6, mid: 12 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410840", buoy: "103", buoyName: "Topanga Nearshore",
+    notes: "Reef/point right with a beach break inside, by Neptune's Net. Best on winter W/NW groundswell through the Channel gap at mid tide with light N–NNE wind.",
+    other: ["Low tide wedges the point; high tide favors the beach break", "Localism", "Afternoon W wind blows it out"],
+  },
+  {
+    id: "leo-carrillo", name: "Leo Carrillo", short: "Leo Carrillo", region: "Malibu / North LA",
+    lat: 34.04400, lon: -118.93280, facing: 195,
+    swellWindow: [[160,0],[175,.6],[195,1],[235,1],[255,.6],[270,.4],[285,.5],[300,0]],
+    shadows: [{ dir: [250,275], cut: 0.5 }],
+    calib: 0.85, mop: "L1173", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[205,240]], good: [[185,250]], mid: [[170,295]] },
+      period: { perfect: [14,18], good: [12,20], mid: [10,22] },
+      height: { perfect: [4,6], good: [3,6], mid: [2,8] },
+      tide:   { perfect: [2.5,4], good: [1.5,4.5], mid: [0.5,5.5], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 22 }, onshore: { good: 5, mid: 10 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410840", buoy: "103", buoyName: "Topanga Nearshore",
+    notes: "Mellow right over cobble and reef at Sequit Point, best on SW groundswell at mid-to-high rising tide. Doesn't hold size; fat above ~4.5 ft tide.",
+    other: ["Tight takeoff next to a big rock", "Longboard friendly", "Arroyo Sequit runoff after rain"],
+  },
+  {
+    id: "zuma", name: "Zuma Beach", short: "Zuma", region: "Malibu / North LA",
+    lat: 34.02150, lon: -118.83350, facing: 210,
+    swellWindow: [[150,0],[165,.5],[185,.8],[215,1],[250,.8],[268,.6],[280,1],[300,.8],[310,0]],
+    shadows: [{ dir: [250,272], cut: 0.4 }],
+    calib: 0.85, mop: "L1074", mopCalib: 1.2,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[215,240],[275,300]], good: [[195,300]], mid: [[170,310]] },   // SW or NW
+      period: { perfect: [12,16], good: [10,18], mid: [7,20] },
+      height: { perfect: [3,5], good: [3,6], mid: [2,8] },
+      tide:   { perfect: [2,4], good: [1,5], mid: [-0.5,6], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 25 }, onshore: { good: 5, mid: 10 } },
+    },
+    rainSensitive: true, crowd: "medium", comboNeeded: true,
+    tideStation: "9410840", buoy: "103", buoyName: "Topanga Nearshore",
+    notes: "Open beach break and the most W/NW-exposed spot in north LA County — often surfing when the rest of Malibu is flat. Peaky at mid rising tide with NE wind; closes out above ~6 ft and blows out early.",
+    other: ["Heavy shorepound, strong rips", "Submarine canyon offshore"],
+  },
+  {
+    id: "topanga", name: "Topanga Beach", short: "Topanga", region: "Malibu / North LA",
+    lat: 34.03700, lon: -118.58250, facing: 190,
+    swellWindow: [[155,0],[170,.6],[190,1],[235,1],[255,.6],[265,.3],[285,.1],[295,0]],
+    shadows: [{ dir: [255,285], cut: 0.6 }],                                    // Point Dume; long period wraps
+    calib: 0.85, mop: "L0809", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[200,240]], good: [[185,255]], mid: [[170,285]] },
+      period: { perfect: [14,18], good: [12,20], mid: [11,22] },
+      height: { perfect: [4,7], good: [3,8], mid: [2,12] },
+      tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5.5], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 22 }, onshore: { good: 6, mid: 12 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410840", buoy: "103", buoyName: "Topanga Nearshore",
+    notes: "Long right point over boulders and sand, best on SW groundswell at mid tide with N wind. Big W swells wrap past Point Dume and can run 300 yards.",
+    other: ["Very crowded; locals hard on newcomers", "Lagoon/canyon runoff after rain", "Outer section 'Boomers'"],
+  },
+
+  /* ---------- South Bay (faces ~W; Palos Verdes blocks S swell) ---------- */
+  {
+    id: "burnout", name: "Burnout (Torrance)", short: "Burnout", region: "South Bay",
+    lat: 33.81520, lon: -118.39180, facing: 280,
+    swellWindow: [[200,0],[210,.2],[220,.5],[230,.85],[245,1],[275,1],[290,.6],[300,.25],[310,0]],
+    shadows: [{ dir: [272,290], cut: 0.45 }],                                   // Channel Islands
+    calib: 0.85, mop: "L0470", mopCalib: 0.7,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[255,280]], good: [[240,290]], mid: [[215,300]] },
+      period: { perfect: [13,17], good: [11,18], mid: [9,20] },
+      height: { perfect: [4,6], good: [3,7], mid: [2,8] },
+      tide:   { perfect: [2.5,4.5], good: [1.5,5.5], mid: [0.5,6.5], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 25 }, onshore: { good: 4, mid: 5.2 } },   // light onshore ruins it (same rule as El Porto)
+    },
+    rainSensitive: true, crowd: "medium",
+    tideStation: "9410660", buoy: "092", buoyName: "San Pedro",
+    notes: "North end of Torrance Beach below Miramar Park, tucked close to Palos Verdes — mostly a W/WNW groundswell spot; south swells barely reach it. Punchy, mostly rights, best on a mid-to-high rising tide with morning E wind.",
+    other: ["PV blocks swell from south of ~205°", "Strong rips; backwash at low tide", "Sandbars shift with winter swell"],
+  },
+  {
+    id: "knob-hill", name: "Knob Hill (Redondo)", short: "Knob Hill", region: "South Bay",
+    lat: 33.82860, lon: -118.39140, facing: 268,
+    swellWindow: [[195,0],[205,.2],[215,.55],[228,.9],[240,1],[275,1],[290,.6],[300,.25],[310,0]],
+    shadows: [{ dir: [272,290], cut: 0.45 }],
+    calib: 0.85, mop: "L0485", mopCalib: 0.75,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[250,280]], good: [[225,290]], mid: [[205,300]] },
+      period: { perfect: [12,17], good: [10,18], mid: [8,20] },
+      height: { perfect: [3,6], good: [2.5,7], mid: [2,8] },
+      tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5.5], prefer: null },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 25 }, onshore: { good: 4, mid: 5.2 } },   // light onshore ruins it (same rule as El Porto)
+    },
+    rainSensitive: true, crowd: "medium",
+    tideStation: "9410660", buoy: "028", buoyName: "Santa Monica Bay",
+    notes: "South Redondo beach-break peaks at the foot of the Knob Hill stairs. Open to W swell and gets a bit more SSW wrap than Burnout. Best on winter W groundswell with morning E wind around mid tide.",
+    other: ["Redondo Canyon head is just north (focusing here unverified)", "Sandbars shift seasonally", "Storm drains along the Esplanade"],
+  },
+
+  /* ---------- Orange County ---------- */
+  {
+    id: "hb-north", name: "Huntington Pier, Northside", short: "HB North", region: "Orange County",
+    lat: 33.65574, lon: -118.00397, facing: 214,
+    swellWindow: [[150,0],[165,.6],[180,1],[210,1],[230,.7],[255,.8],[275,.6],[285,.2],[295,0]],
+    shadows: [{ dir: [215,250], cut: 0.4 }],                                    // Catalina
+    calib: 0.85, mop: "OC516", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[185,215]], good: [[175,240]], mid: [[160,285]] },    // S–SW (summer) side
+      period: { perfect: [14,18], good: [11,20], mid: [8,22] },
+      height: { perfect: [4,6], good: [3,7], mid: [2,9] },
+      tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5.5], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },   // over 6 mph onshore = Don't Go
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410580", buoy: "213", buoyName: "San Pedro South",
+    notes: "Pier Bowl right into the pier plus a longer left up the beach; best on S–SW summer swell at low-mid rising tide with NE or glassy wind. Always crowded; blows out by midday.",
+    other: ["Pilings and current", "North vs. south side preference is only moderately sourced"],
+  },
+  {
+    id: "hb-south", name: "Huntington Pier, Southside", short: "HB South", region: "Orange County",
+    lat: 33.65475, lon: -118.00291, facing: 214,
+    swellWindow: [[155,0],[170,.5],[190,.9],[210,1],[230,.7],[255,1],[280,.8],[288,.3],[295,0]],
+    shadows: [{ dir: [215,250], cut: 0.4 }],
+    calib: 0.85, mop: "OC514", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[250,280]], good: [[215,285]], mid: [[165,288]] },    // W–WNW (winter) side
+      period: { perfect: [13,17], good: [10,19], mid: [8,22] },
+      height: { perfect: [4,6], good: [3,7], mid: [2,9] },
+      tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },   // over 6 mph onshore = Don't Go
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410580", buoy: "213", buoyName: "San Pedro South",
+    notes: "Peaky rights and lefts along the pilings; favored in winter on W–NW swell wrapping under the pier. Low-mid rising tide, NE wind.",
+    other: ["Often blackballed midday in summer", "Strong current on big swell"],
+  },
+  {
+    id: "newport-lower", name: "Newport Lower Jetties", short: "Lower Jetties", region: "Orange County",
+    lat: 33.61556, lon: -117.93676, facing: 215,
+    swellWindow: [[150,0],[165,.7],[180,1],[215,1],[230,.6],[258,.7],[275,.5],[282,.1],[290,0]],
+    shadows: [{ dir: [225,258], cut: 0.4 }],                                    // Catalina
+    calib: 0.85, mop: "OC437", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[180,210]], good: [[170,225]], mid: [[160,280]] },
+      period: { perfect: [13,18], good: [11,20], mid: [8,22] },
+      height: { perfect: [4,7], good: [3,8], mid: [2,10] },
+      tide:   { perfect: [2,4], good: [1,5], mid: [-0.5,5.5], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },   // your Newport rule: over 6 mph onshore = Don't Go
+    },
+    rainSensitive: true, crowd: "medium",
+    tideStation: "9410580", buoy: "213", buoyName: "San Pedro South",
+    notes: "Sand peaks between rock groins (about 30th–40th St), lefts and rights; S–SW groundswell, rising tide, NE offshore. Holds shape on big S days that close out the open beach.",
+    other: ["Rocks and rips along the groins", "Friendlier lineup than the Upper Jetties"],
+  },
+  {
+    id: "wedge", name: "The Wedge", short: "The Wedge", region: "Orange County",
+    lat: 33.59330, lon: -117.88270, facing: 185,
+    swellWindow: [[150,0],[165,.5],[180,1],[205,1],[220,.4],[235,0]],              // W swell does nothing here
+    shadows: [{ dir: [205,220], cut: 0.7 }],                                    // San Clemente Island
+    calib: 0.85, mop: "OC381", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { perfect: [[180,205]], good: [[172,212]], mid: [[165,220]] },
+      period: { perfect: [15,20], good: [14,21], mid: [12,22] },                // under ~12 s the wedge doesn't form
+      height: { perfect: [8,18], good: [6,20], mid: [4,25] },
+      tide:   { perfect: [2.5,4], good: [1.5,5], mid: [0.5,6], prefer: "rising" },
+      wind:   { offshore: { perfect: 8, good: 12, mid: 18 }, onshore: { good: 4, mid: 5.2 } },   // your Newport rule
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410580", buoy: "213", buoyName: "San Pedro South",
+    notes: "Jetty backwash wedges S–SSW groundswell into a heavy shorebreak peak. 'Perfect' here means perfect for experts only — it has caused deaths and spinal injuries.",
+    other: ["Blackball 10am–5pm May 1–Oct 31 (bodysurf/bodyboard only)", "Extreme shorebreak", "Localism, spectators"],
+  },
+  {
+    id: "newport-point", name: "Newport Point", short: "Newport Point", region: "Orange County",
+    lat: 33.60470, lon: -117.92520, facing: 205,
+    swellWindow: [[145,0],[155,.6],[165,1],[185,1],[200,.6],[215,.3],[230,0]],
+    calib: 0.85, mop: "OC422", mopCalib: 1.0,
+    criteria: {
+      dir:    { perfect: [[160,180]], good: [[155,190]], mid: [[150,205]] },    // SE–S, usually hurricane swell
+      period: { perfect: [10,14], good: [9,16], mid: [8,18] },
+      height: { perfect: [5,8], good: [4,10], mid: [3,12] },
+      tide:   { perfect: [0.5,2.5], good: [0,3.5], mid: [-1,4.5], prefer: null },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },   // your Newport rule
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410580", buoy: "213", buoyName: "San Pedro South",
+    notes: "Fickle sand-bottom wedge at 18th St by Newport Pier, focused by the Newport Canyon — mostly lefts on hurricane SE–S swell. Only a few days a year; thick and hollow, serious above 8 ft.",
+    other: ["Ultra crowded when it's on", "Rips; pollution after rain", "It's at 18th St, not next to the Wedge"],
+  },
+  {
+    id: "uppers", name: "Upper Trestles", short: "Uppers", region: "Orange County",
+    lat: 33.38557, lon: -117.59438, facing: 225,
+    swellWindow: [[160,0],[175,.6],[190,.8],[215,.85],[230,.7],[245,.6],[262,.5],[278,.55],[290,.6],[300,.35],[310,0]],
+    shadows: [{ dir: [228,248], cut: 0.4 }, { dir: [260,278], cut: 0.5 }],     // San Clemente Is.; Catalina
+    calib: 0.85, mop: "D1208", mopCalib: 1.2,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
+    criteria: {
+      dir:    { combo: [[265,290],[180,215]], perfect: [[265,290]], good: [[200,295]], mid: [[170,305]] },   // W–WNW, or S + WNW combo
+      period: { perfect: [13,18], good: [11,20], mid: [8,22] },
+      height: { perfect: [4,8], good: [3,10], mid: [2,12] },
+      tide:   { perfect: [0.5,3], good: [0,4], mid: [-1,5], prefer: "rising" },
+      wind:   { offshore: { perfect: 12, good: 18, mid: 25 }, onshore: { good: 5, mid: 10 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410580", buoy: "284", buoyName: "Capistrano Beach Nearshore",
+    notes: "Rocky right-hand reef/point with several peaks, best on W–WNW groundswell or S/WNW combos at low-to-mid rising tide with E/NE wind. Handles W/NW better than Lowers.",
+    other: ["15–30 min walk from the Cristianitos lot", "Crowded; several peaks spread it out", "Right by the creek mouth: skip 72 h after rain", "Sectiony on big swells"],
+  },
+  {
+    id: "lowers", name: "Lower Trestles", short: "Lowers", region: "Orange County",
+    lat: 33.38278, lon: -117.58868, facing: 220,
+    swellWindow: [[155,0],[165,.5],[175,.9],[185,1],[215,1],[230,.8],[245,.6],[262,.4],[278,.35],[292,.35],[302,.15],[310,0]],
+    shadows: [{ dir: [228,248], cut: 0.4 }, { dir: [260,278], cut: 0.5 }],
+    calib: 0.85, mop: "D1203", mopCalib: 1.0,
+    criteria: {
+      dir:    { combo: [[180,215],[265,295]], perfect: [[180,215]], good: [[170,230]], mid: [[160,295]] },   // S–SSW, or S + WNW combo
+      period: { perfect: [14,20], good: [12,22], mid: [9,22] },
+      height: { perfect: [4,8], good: [3,10], mid: [2,12] },
+      tide:   { perfect: [1.5,4], good: [0.5,5], mid: [-0.5,6], prefer: "rising" },
+      wind:   { offshore: { perfect: 12, good: 18, mid: 25 }, onshore: { good: 5, mid: 10 } },
+    },
+    rainSensitive: true, crowd: "high",
+    tideStation: "9410580", buoy: "284", buoyName: "Capistrano Beach Nearshore",
+    notes: "World-class cobblestone A-frame: long right, short fast left. Best on S–SSW groundswell at mid, rising tide with light E/NE wind. Packed, high-level lineup and a long walk.",
+    other: ["15–30 min walk from the Cristianitos lot", "Extremely crowded and localized", "Too much S/SE swell makes the right break over the shelf", "Creek runoff: skip 72 h after rain"],
   },
 ];
 
@@ -183,10 +517,22 @@ const hourLabel = k => { const h = +k.slice(11,13); return h===0?"12a":h<12?`${h
 const clock = s => { const h = +s.slice(11,13), m = s.slice(14,16); return `${h%12||12}:${m}${h<12?"a":"p"}`; };
 const dayLabel = (k, opts={weekday:"short",month:"short",day:"numeric"}) => new Date(k.slice(0,10)+"T12:00").toLocaleDateString("en-US",opts);
 
+/* Shared requests: spots that use the same tide station or buoy reuse one
+   request for SHARE_MS instead of each fetching its own (21 spots → far fewer calls). */
+const SHARE_MS = 5*60e3, _shared = new Map();
+function shared(key, make){
+  const hit = _shared.get(key);
+  if(hit && Date.now() - hit.at < SHARE_MS) return hit.p;
+  const p = make(); _shared.set(key, { at: Date.now(), p });
+  p.catch(() => _shared.delete(key));
+  return p;
+}
 async function getJSON(url){
-  const r = await fetch(url);
-  if(!r.ok) throw new Error(`${r.status} from ${new URL(url).host}`);
-  return r.json();
+  return shared(url, async () => {
+    const r = await fetch(url);
+    if(!r.ok) throw new Error(`${r.status} from ${new URL(url).host}`);
+    return r.json();
+  });
 }
 
 /* ============================ data loading ============================ */
@@ -209,7 +555,7 @@ async function loadSpot(spot){
     getJSON(marineURL), getJSON(wxURL),
     getJSON(tideBase+"&interval=h").catch(e=>({error:e.message})),
     getJSON(tideBase+"&interval=hilo").catch(e=>({error:e.message})),
-    loadBuoy(spot.buoy, spot.buoyName),
+    shared("buoy:" + spot.buoy, () => loadBuoy(spot.buoy, spot.buoyName)),
     loadMop(spot.mop),
     loadMopNow(spot.mop),
     getJSON(hrrrURL).catch(() => null),
