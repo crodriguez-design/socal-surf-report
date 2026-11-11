@@ -207,20 +207,6 @@ header{padding-top:env(safe-area-inset-top)}
 .hours-day{top:calc(96px + env(safe-area-inset-top))}
 footer{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 .offline{border-color:color-mix(in srgb,var(--cross) 45%,var(--line));background:color-mix(in srgb,var(--cross) 8%,var(--surface));font-size:14px}
-/* ---------- Where should I go? ---------- */
-.where{padding:12px 12px 6px}
-.where .wh,.where .wr{display:grid;grid-template-columns:minmax(0,1fr) 104px 104px;gap:8px;align-items:center}
-.where .wh{padding:0 6px 6px;font-size:11px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--faint)}
-.where .wr{width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;
-  padding:9px 6px;border-top:1px solid var(--line);border-radius:10px}
-.where .wr.cur{background:var(--surface-2)}
-.where .wn{font-weight:700;font-size:15px}
-.wc{display:flex;align-items:center;gap:7px;min-width:0}
-.wc span:last-child{display:flex;flex-direction:column;line-height:1.2;min-width:0}
-.wc b{font-size:14px;white-space:nowrap}
-.wc em{font-style:normal;font-size:11.5px;font-weight:650;color:var(--c);white-space:nowrap}
-.wc .star{font-style:normal;color:var(--c);margin-left:4px}
-
 /* ---------- session log ---------- */
 #logFab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:6;
   border:0;border-radius:999px;padding:12px 16px;font:inherit;font-weight:700;font-size:14px;
@@ -252,6 +238,51 @@ dialog#logDlg::backdrop{background:rgba(0,0,0,.6)}
   background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:14px;font-weight:650;transition:.2s;pointer-events:none;z-index:20}
 #toast.show{opacity:1;transform:translateX(-50%)}
 main{padding-bottom:70px}   /* room so the floating button never covers the last card */
+/* ---------- Overview (home screen) ---------- */
+body.on-overview .tabs{display:none}                 /* spot tabs only on the spot screen */
+.ov-head{padding:6px 2px 4px}
+.ov-head h1{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:4px 0 12px}
+.ov-seg{display:inline-flex;gap:4px;padding:4px;border-radius:12px;background:var(--surface)}
+.ov-seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:650;padding:7px 14px;border-radius:9px;cursor:pointer}
+.ov-seg button.on{background:var(--ink);color:var(--bg)}
+.ov-upd{margin:10px 2px 6px}
+.ov-card{display:flex;align-items:stretch;gap:14px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 12px 14px 14px;margin-top:10px;position:relative}
+.ov-card:active{transform:scale(.99)}
+.ov-card.loading{opacity:.6;cursor:default}
+.ov-bar{display:flex;flex-direction:column;gap:3px;width:8px;flex:none;padding:2px 0}
+.ov-bar i{flex:1;border-radius:3px;background:var(--surface-2);min-height:12px}
+.ov-bar i.on{background:var(--c)}
+.ov-body{flex:1;min-width:0}
+.ov-top{display:flex;align-items:center;gap:8px}
+.ov-name{font-size:17px;font-weight:750;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-best{font-size:11.5px;font-weight:750;color:var(--bg);background:var(--c);border-radius:6px;padding:2px 6px;flex:none}
+.ov-mid{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:4px}
+.ov-size{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.ov-size small{font-size:14px}
+.ov-wind{display:inline-flex;align-items:center;gap:4px;font-size:15px;color:var(--c);white-space:nowrap}
+.ov-wind b{color:var(--ink);font-size:18px;margin-left:2px}
+.ov-wind small{font-size:12px}
+.ov-wind em{font-style:normal;font-weight:650;font-size:12.5px;margin-left:4px}
+.ov-bot{font-size:13.5px;margin-top:2px}
+.ov-rate{font-weight:750;color:var(--c)}
+.ov-tags{margin-top:4px;min-height:14px}
+.ov-chev{align-self:center;font-size:26px;color:var(--faint);line-height:1}
+
+/* ---------- bottom navigation ---------- */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:7;display:flex;justify-content:space-around;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line)}
+.bnav a,.bnav button{flex:1;max-width:140px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;
+  border:0;background:transparent;color:var(--faint);font:inherit;font-size:11.5px;font-weight:650;text-decoration:none;cursor:pointer;border-radius:12px}
+.bnav svg{width:24px;height:24px}
+.bnav .on{color:var(--ink)}
+.bnav #logFab{color:var(--ocean);font-size:11.5px;font-weight:650}
+#logFab{position:static;box-shadow:none;padding:6px 4px;border-radius:12px;background:transparent}
+main{padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+#toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+footer{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 </style>
 </head>
 <body>
@@ -280,7 +311,11 @@ main{padding-bottom:70px}   /* room so the floating button never covers the last
 </footer>
 
 <!-- Session log: floating button + sheet -->
-<button id="logFab" aria-label="Log a surf session">＋ Log surf</button>
+<nav class="bnav" aria-label="Main">
+  <a href="#/" data-nav="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Overview</a>
+  <a href="#/spot/54th" data-nav="spot" id="navSpot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 19c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M12 3l3 5H9z"/></svg>Spots</a>
+  <button id="logFab" aria-label="Log a surf session"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Log surf</button>
+</nav>
 <dialog id="logDlg" aria-label="Surf session log">
   <div class="lg-tabs"><button data-view="form" class="on">Log a surf</button><button data-view="list">My sessions</button></div>
   <form id="lgForm">
@@ -928,7 +963,6 @@ function render(spot, d){
   </details>`;
 
   $("#app").innerHTML = `
-    <div id="where">${whereCard()}</div>
     ${banner}${hero}${days}
     ${scrubber(spot, d)}
     <div class="grid2">
@@ -1143,35 +1177,115 @@ function tideChart(spot, d){
 }
 
 /* =====================================================================
-   WHERE SHOULD I GO? — all spots side by side: right now, and tomorrow at
-   first light (average of the first two daylight hours). Tap a row to
-   open that spot. Fills in as the other spots load in the background.
+   OVERVIEW — the home screen. One card per spot (like a favorites list):
+   rating bar, size, wind vs. the beach, tide, and what's limiting it.
+   "Now" uses the current hour; "Tomorrow AM" uses tomorrow's first two
+   daylight hours. Tap a card to open that spot.
    ===================================================================== */
-function whereCard(){
-  const rows = SPOTS.map(s => {
-    const e = cache[s.id];
-    if(!e?.raw) return { s };
-    try {
-      const d = build(s, e.raw); if(!d.hours.length) return { s };
-      const now = d.hours[0];
-      const tmrw = addH(now.k.slice(0,10) + "T12", 24).slice(0,10);
-      const dawnH = d.hours.filter(h => h.k.startsWith(tmrw) && h.daylight).slice(0,2);
-      const dawn = dawnH.length ? { score: dawnH.reduce((x,h)=>x+h.a.score,0)/dawnH.length, a: dawnH[0].a, k: dawnH[0].k } : null;
-      return { s, now: { score: now.a.score, a: now.a }, dawn };
-    } catch { return { s }; }
-  });
-  const best = key => { const r = rows.filter(r => r[key]).sort((x,y)=>y[key].score-x[key].score)[0]; return r && r[key].score >= 4 ? r.s.id : null; };
-  const bNow = best("now"), bDawn = best("dawn");
-  const cell = (c, isBest) => !c ? `<div class="wc faint">…</div>` : (() => { const t = tierOf(c.score); return `
-    <div class="wc ${t.cls}"><span class="dot"></span><span><b>${fmtRange(c.a.surfLo, c.a.surfHi)} ${hU()}${isBest ? `<i class="star">★</i>` : ""}</b><em>${t.name}</em></span></div>`; })();
-  const dawnLbl = rows.find(r => r.dawn)?.dawn ? `Tmrw ${hourLabel(rows.find(r => r.dawn).dawn.k)}` : "Tmrw AM";
-  return `<section class="card where">
-    <div class="wh"><span class="h" style="margin:0">Where to go</span><span>Now</span><span>${dawnLbl}</span></div>
-    ${rows.map(r => `<button class="wr ${r.s.id === prefs.spot ? "cur" : ""}" data-go="${r.s.id}">
-      <span class="wn">${r.s.short || r.s.name}</span>${cell(r.now, r.s.id === bNow)}${cell(r.dawn, r.s.id === bDawn)}</button>`).join("")}
-  </section>`;
+let view = "overview";                                   // "overview" | "spot"
+let ovMode = store.get("surf.ovmode", "now");            // "now" | "dawn"
+
+function spotSnapshot(s){
+  const e = cache[s.id];
+  if(!e?.raw) return { s };
+  try {
+    const d = build(s, e.raw); if(!d.hours.length) return { s };
+    const now = d.hours[0];
+    const tmrw = addH(now.k.slice(0,10) + "T12", 24).slice(0,10);
+    const dawnH = d.hours.filter(h => h.k.startsWith(tmrw) && h.daylight).slice(0,2);
+    return { s, offline: e.offline, at: e.at, d,
+      now:  { score: now.a.score, h: now },
+      dawn: dawnH.length ? { score: dawnH.reduce((x,h)=>x+h.a.score,0)/dawnH.length, h: dawnH[0] } : null };
+  } catch { return { s }; }
 }
-document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b) goTo(b.dataset.go); });
+
+/* Vertical rating bar: 4 segments, filled from the bottom up to the tier
+   (Don't Go = 1 … Perfect = 4), in that tier's color. */
+const ratingBar = lv => `<div class="ov-bar ${LEVEL[lv].cls}" aria-hidden="true">${[3,2,1,0].map(i => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</div>`;
+
+function overviewHTML(){
+  const snaps = SPOTS.map(spotSnapshot);
+  const pick = sn => sn[ovMode];
+  const loaded = snaps.filter(pick);
+  const best = loaded.sort((x,y)=>pick(y).score-pick(x).score)[0];
+  const bestId = best && pick(best).score >= 4 ? best.s.id : null;
+  const firstDawn = snaps.find(sn => sn.dawn)?.dawn;
+  const oldest = Math.min(...snaps.filter(sn => sn.at).map(sn => sn.at));
+  const anyOffline = snaps.some(sn => sn.offline);
+
+  const card = sn => {
+    const c = pick(sn);
+    if(!c) return `<div class="ov-card loading"><div class="ov-bar"><i></i><i></i><i></i><i></i></div>
+      <div class="ov-body"><div class="ov-name">${sn.s.name}</div><div class="faint small">${sn.d ? "No forecast for that time" : "Loading…"}</div></div></div>`;
+    const h = c.h, a = h.a, t = tierOf(c.score), lv = TIERS.indexOf(t);
+    return `<button class="ov-card ${t.cls}" data-go="${sn.s.id}">
+      ${ratingBar(lv)}
+      <div class="ov-body">
+        <div class="ov-top"><span class="ov-name">${sn.s.name}</span>${sn.s.id === bestId ? `<span class="ov-best">★ Best</span>` : ""}</div>
+        <div class="ov-mid">
+          <span class="ov-size">${fmtRange(a.surfLo, a.surfHi)}<small>${hU()}</small></span>
+          <span class="ov-wind ${a.windCls}">${arrowIcon(h.wind.dir, 14)}<b>${fmtW(h.wind.spd)}</b><small>${wU()}</small> ${compass(h.wind.dir)}<em>${a.windTag}</em></span>
+        </div>
+        <div class="ov-bot"><span class="ov-rate">${t.name}</span>
+          <span class="faint">· tide ${h.tide != null ? fmtH(h.tide/M2FT) + hU() + " " + (h.trend === "↑" ? "rising" : h.trend === "↓" ? "falling" : "") : "–"}</span></div>
+        <div class="ov-tags">${limTags(a)}</div>
+      </div>
+      <span class="ov-chev" aria-hidden="true">›</span>
+    </button>`;
+  };
+
+  return `
+    <div class="ov-head">
+      <h1>Overview</h1>
+      <div class="ov-seg" role="tablist">
+        <button data-ov="now" class="${ovMode === "now" ? "on" : ""}">Now</button>
+        <button data-ov="dawn" class="${ovMode === "dawn" ? "on" : ""}">${firstDawn ? `Tomorrow ${hourLabel(firstDawn.h.k)}` : "Tomorrow AM"}</button>
+      </div>
+      <div class="ov-upd faint small">${isFinite(oldest) ? `${anyOffline ? "📵 Offline · saved" : "Updated"} ${agoText(Date.now() - oldest)}` : ""}</div>
+    </div>
+    ${snaps.map(card).join("")}
+    <p class="faint small" style="margin:14px 4px 0">Ratings use each spot's researched criteria — wind, tide, swell direction and period count more than size. Tap a spot for the full forecast.</p>`;
+}
+
+function drawOverview(){ if(view !== "overview") return; $("#app").innerHTML = overviewHTML(); delete $("#app").dataset.spot; }
+
+/* Load every spot (fresh if older than 20 min; saved copy when offline), redrawing as each arrives. */
+async function showOverview(force){
+  drawOverview();
+  await Promise.all(SPOTS.map(async s => {
+    const e = cache[s.id];
+    if(!force && e && !e.offline && Date.now() - e.at < 20*60e3) return;
+    try { cache[s.id] = { at: Date.now(), raw: await loadSpot(s) }; saveForecast(s.id, cache[s.id]); }
+    catch { if(!cache[s.id]?.raw){ const saved = savedForecast(s.id); if(saved) cache[s.id] = saved; } else cache[s.id].offline = true; }
+    drawOverview();
+  }));
+  drawOverview();
+}
+
+document.addEventListener("click", e => {
+  const seg = e.target.closest("[data-ov]");
+  if(seg){ ovMode = seg.dataset.ov; store.set("surf.ovmode", ovMode); drawOverview(); return; }
+  const b = e.target.closest("[data-go]");
+  if(b) openSpot(b.dataset.go);
+});
+
+/* ---------- screens + phone back button (URL hash: #/ = Overview, #/spot/<id> = a spot) ---------- */
+function openSpot(id){ location.hash = `#/spot/${id}`; }
+function route(){
+  const m = location.hash.match(/^#\/spot\/([\w-]+)/);
+  const spot = m && SPOTS.find(s => s.id === m[1]);
+  view = spot ? "spot" : "overview";
+  document.body.classList.toggle("on-overview", view === "overview");
+  document.querySelectorAll("[data-nav]").forEach(a => a.classList.toggle("on", a.dataset.nav === view));
+  $("#navSpot").href = `#/spot/${prefs.spot}`;
+  window.scrollTo({ top: 0 });
+  if(view === "spot"){
+    if(spot.id !== prefs.spot){ prefs.spot = spot.id; store.set("surf.spot", spot.id); }
+    $("#navSpot").href = `#/spot/${prefs.spot}`;
+    tabs(); show();
+  } else showOverview();
+}
+window.addEventListener("hashchange", route);
 
 /* =====================================================================
    SESSION LOG — after a surf, tap "＋ Log surf", pick the spot and time,
@@ -1290,9 +1404,12 @@ function tabs(){
 /* Switch spot. dir = +1 (next) / -1 (previous) picks the slide-in direction. */
 function goTo(id, dir){
   const from = SPOTS.findIndex(s => s.id === prefs.spot), to = SPOTS.findIndex(s => s.id === id);
-  if(to < 0 || to === from) return;
+  if(to < 0) return;
+  if(view !== "spot"){ openSpot(id); return; }
+  if(to === from) return;
   dir = dir ?? (to > from ? 1 : -1);
   prefs.spot = id; store.set("surf.spot", id);
+  history.replaceState(null, "", `#/spot/${id}`); $("#navSpot").href = `#/spot/${id}`;
   tabs();
   const app = $("#app");
   app.classList.remove("in-next", "in-prev"); void app.offsetWidth;   // restart the animation
@@ -1314,7 +1431,7 @@ document.addEventListener("touchstart", e => {
   const t = e.touches[0]; touch0 = { x: t.clientX, y: t.clientY, t: Date.now() };
 }, { passive: true });
 document.addEventListener("touchend", e => {
-  if(!touch0) return;
+  if(!touch0 || view !== "spot") return;
   const t = e.changedTouches[0], dx = t.clientX - touch0.x, dy = t.clientY - touch0.y, dt = Date.now() - touch0.t;
   touch0 = null;
   if(Math.abs(dx) < SWIPE.min || Math.abs(dx) < SWIPE.ratio*Math.abs(dy) || dt > SWIPE.maxMs) return;
@@ -1329,7 +1446,7 @@ function prefetch(){
   if(prefetching) return; prefetching = true;
   Promise.all(SPOTS.filter(s => !cache[s.id]).map(s =>
     loadSpot(s).then(raw => { if(!cache[s.id]){ cache[s.id] = { at: Date.now(), raw }; saveForecast(s.id, cache[s.id]); } }).catch(() => {})
-  )).finally(() => { prefetching = false; const w = $("#where"); if(w) w.innerHTML = whereCard(); });
+  )).finally(() => { prefetching = false; drawOverview(); });
 }
 /* ---------- offline: keep the last good forecast for each spot on the phone ---------- */
 const savedKey = id => `surf.data.${id}`;
@@ -1357,7 +1474,7 @@ async function show(force){
       cache[spot.id] = saved;
     }
   }
-  if(spot.id !== prefs.spot) return;
+  if(spot.id !== prefs.spot || view !== "spot") return;
   const entry = cache[spot.id];
   try {
     const d = build(spot, entry.raw);
@@ -1369,14 +1486,15 @@ async function show(force){
   } catch(e){ console.error(e); $("#app").innerHTML = `<div class="card err">Something went wrong drawing ${spot.name}: ${e.message}</div>`; }
   if(!entry.offline) prefetch();
 }
-window.addEventListener("online", () => show(true));
+const redraw = force => view === "spot" ? show(force) : showOverview(force);
+window.addEventListener("online", () => redraw(true));
 for(const [id,key,sk] of [["#unitH","h","surf.h"],["#unitW","w","surf.w"]]){
   $(id).value = prefs[key];
-  $(id).onchange = e => { prefs[key] = e.target.value; store.set(sk, prefs[key]); show(); };
+  $(id).onchange = e => { prefs[key] = e.target.value; store.set(sk, prefs[key]); redraw(); };
 }
-$("#refresh").onclick = () => show(true);
+$("#refresh").onclick = () => redraw(true);
 if(!SPOTS.some(s=>s.id===prefs.spot)) prefs.spot = SPOTS[0].id;
-tabs(); show(); initLog();
+initLog(); route();   // opens Overview (or the spot in the URL)
 
 /* Register the offline helper (sw.js) so the app opens without signal. */
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
