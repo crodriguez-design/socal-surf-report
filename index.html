@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0a1016">
+<meta name="theme-color" content="#080d12">
 <title>SoCal Surf Check</title>
+<!-- Install-as-app: icon, name, full-screen on the home screen -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Surf Check">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 /* =====================================================================
    THEME — every color lives here; change these and the page follows.
@@ -194,6 +202,11 @@ footer{padding:8px 0 40px;font-size:12px;color:var(--faint);line-height:1.6}
 @keyframes inNext{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
 @keyframes inPrev{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){ #app.in-next,#app.in-prev{animation:none} }
+/* installed app: keep the header clear of the iPhone notch / status bar */
+header{padding-top:env(safe-area-inset-top)}
+.hours-day{top:calc(96px + env(safe-area-inset-top))}
+footer{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+.offline{border-color:color-mix(in srgb,var(--cross) 45%,var(--line));background:color-mix(in srgb,var(--cross) 8%,var(--surface));font-size:14px}
 </style>
 </head>
 <body>
@@ -1055,21 +1068,48 @@ let prefetching = false;
 function prefetch(){
   if(prefetching) return; prefetching = true;
   Promise.all(SPOTS.filter(s => !cache[s.id]).map(s =>
-    loadSpot(s).then(raw => { if(!cache[s.id]) cache[s.id] = { at: Date.now(), raw }; }).catch(() => {})
+    loadSpot(s).then(raw => { if(!cache[s.id]){ cache[s.id] = { at: Date.now(), raw }; saveForecast(s.id, cache[s.id]); } }).catch(() => {})
   )).finally(() => prefetching = false);
 }
+/* ---------- offline: keep the last good forecast for each spot on the phone ---------- */
+const savedKey = id => `surf.data.${id}`;
+function saveForecast(id, entry){ try { localStorage.setItem(savedKey(id), JSON.stringify(entry)); } catch {} }
+function savedForecast(id){
+  try {
+    const e = JSON.parse(localStorage.getItem(savedKey(id)));
+    if(e?.raw?.buoy?.time) e.raw.buoy.time = new Date(e.raw.buoy.time);   // JSON turned the Date into text
+    return e ? { ...e, offline: true } : null;
+  } catch { return null; }
+}
+const agoText = ms => { const m = Math.round(ms/60000); return m < 60 ? `${m} min ago` : m < 48*60 ? `${Math.round(m/60)} h ago` : `${Math.round(m/1440)} days ago`; };
+
 async function show(force){
   const spot = SPOTS.find(s=>s.id===prefs.spot) || SPOTS[0];
-  if(force || !cache[spot.id] || Date.now() - cache[spot.id].at > 20*60e3){
-    $("#app").innerHTML = `<div class="skeleton"></div>`;
-    try { cache[spot.id] = { at: Date.now(), raw: await loadSpot(spot) }; }
-    catch(e){ $("#app").innerHTML = `<div class="card err">Couldn't load data: ${e.message}</div>`; return; }
+  if(force || !cache[spot.id] || cache[spot.id].offline || Date.now() - cache[spot.id].at > 20*60e3){
+    // keep the current view while refreshing the SAME spot; otherwise show the loading shimmer
+    if(!cache[spot.id] || $("#app").dataset.spot !== spot.id) $("#app").innerHTML = `<div class="skeleton"></div>`;
+    try {
+      cache[spot.id] = { at: Date.now(), raw: await loadSpot(spot) };
+      saveForecast(spot.id, cache[spot.id]);
+    } catch(e){
+      const saved = cache[spot.id]?.raw ? { ...cache[spot.id], offline: true } : savedForecast(spot.id);
+      if(!saved){ $("#app").innerHTML = `<div class="card err">Couldn't load ${spot.name} and there's no saved forecast yet. Check your signal and tap ↻.</div>`; return; }
+      cache[spot.id] = saved;
+    }
   }
   if(spot.id !== prefs.spot) return;
-  try { render(spot, build(spot, cache[spot.id].raw)); }
-  catch(e){ console.error(e); $("#app").innerHTML = `<div class="card err">Something went wrong drawing ${spot.name}: ${e.message}</div>`; }
-  prefetch();
+  const entry = cache[spot.id];
+  try {
+    const d = build(spot, entry.raw);
+    if(!d.hours.length){ $("#app").innerHTML = `<div class="card err">The saved forecast for ${spot.name} is too old to show. Tap ↻ when you have signal.</div>`; return; }
+    render(spot, d);
+    $("#app").dataset.spot = spot.id;
+    if(entry.offline) $("#app").insertAdjacentHTML("afterbegin",
+      `<div class="card offline">📵 <b>No connection.</b> Showing the forecast saved ${agoText(Date.now() - entry.at)}. It refreshes when you're back online.</div>`);
+  } catch(e){ console.error(e); $("#app").innerHTML = `<div class="card err">Something went wrong drawing ${spot.name}: ${e.message}</div>`; }
+  if(!entry.offline) prefetch();
 }
+window.addEventListener("online", () => show(true));
 for(const [id,key,sk] of [["#unitH","h","surf.h"],["#unitW","w","surf.w"]]){
   $(id).value = prefs[key];
   $(id).onchange = e => { prefs[key] = e.target.value; store.set(sk, prefs[key]); show(); };
@@ -1077,6 +1117,9 @@ for(const [id,key,sk] of [["#unitH","h","surf.h"],["#unitW","w","surf.w"]]){
 $("#refresh").onclick = () => show(true);
 if(!SPOTS.some(s=>s.id===prefs.spot)) prefs.spot = SPOTS[0].id;
 tabs(); show();
+
+/* Register the offline helper (sw.js) so the app opens without signal. */
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body>
 </html>
