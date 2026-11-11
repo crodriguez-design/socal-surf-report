@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1016">
+<title>SoCal Surf Check</title>
+<style>
+/* =====================================================================
+   THEME — every color lives here. Change these and the whole page follows.
+   Rating colors are deliberately "ocean" rather than traffic-light:
+     Perfect  = luminous aqua (inviting)
+     Good     = kelp green   (inviting, calmer)
+     Mid/Fun  = slate        (neutral)
+     Don't Go = soft coral   (cautionary, not alarm-red)
+   ===================================================================== */
+:root{
+  --bg:        #0a1016;   /* page */
+  --surface:   #111a22;   /* cards */
+  --surface-2: #17222c;   /* inset panels, rows */
+  --line:      #22303d;   /* hairlines */
+  --ink:       #eef3f7;   /* primary text */
+  --muted:     #8b9cab;   /* secondary text */
+  --faint:     #5d6f7e;   /* tertiary text */
+  --ocean:     #5ab8ff;   /* tide curve, links, accents */
+
+  --perfect:   #2ee6c9;
+  --good:      #74d39b;
+  --mid:       #b3bfcb;
+  --dontgo:    #f2907c;
+
+  /* wind relative to the beach */
+  --offshore:  var(--perfect);
+  --cross:     #e2bf73;   /* sand */
+  --onshore:   var(--dontgo);
+
+  --radius: 16px;
+  --gap: 12px;
+}
+/* tier classes set --c, which pills / bars / borders read */
+.t3{--c:var(--perfect)} .t2{--c:var(--good)} .t1{--c:var(--mid)} .t0{--c:var(--dontgo)}
+.w-off{--c:var(--offshore)} .w-cross{--c:var(--cross)} .w-on{--c:var(--onshore)}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-variant-numeric:tabular-nums}
+a{color:var(--ocean)}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 8px}
+.brand{font-weight:700;letter-spacing:-.01em;font-size:17px}
+.brand span{color:var(--ocean)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);
+  border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}
+.tab.on{color:var(--bg);background:var(--ink);border-color:var(--ink);font-weight:600}
+.settings{display:flex;gap:6px}
+.settings select,.icon-btn{font:inherit;font-size:13px;color:var(--muted);background:var(--surface);
+  border:1px solid var(--line);border-radius:10px;padding:5px 8px;cursor:pointer}
+
+/* ---------- generic ---------- */
+main{padding:16px 0 8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:var(--gap)}
+.h{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.muted{color:var(--muted)} .faint{color:var(--faint)} .small{font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:650;
+  color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c);display:inline-block;flex:none}
+.grid2{display:grid;gap:var(--gap);grid-template-columns:1fr}
+@media (min-width:760px){ .grid2{grid-template-columns:1fr 1fr} }
+
+/* ---------- hero (current conditions) ---------- */
+.hero{padding:18px 18px 14px;border-color:color-mix(in srgb,var(--c) 30%,var(--line));
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 9%,var(--surface)),var(--surface) 60%)}
+.hero-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.rating-word{font-size:30px;font-weight:750;letter-spacing:-.02em;color:var(--c);line-height:1.1}
+.meter{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;margin:10px 0 2px}
+.meter>i{display:block;height:100%;background:var(--c);border-radius:6px}
+.size-row{display:flex;align-items:flex-end;gap:10px;margin-top:12px}
+.size{font-size:56px;font-weight:750;letter-spacing:-.03em;line-height:.95}
+.size small{font-size:20px;font-weight:600;color:var(--muted);margin-left:4px}
+.limiter{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:14px}
+.limiter b{color:var(--c)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{background:var(--surface-2);border-radius:12px;padding:10px 10px 9px;min-width:0}
+.stat .k{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font-size:19px;font-weight:700;margin-top:2px;white-space:nowrap}
+.stat .s{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .tag{color:var(--c);font-weight:650}
+.sections{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+/* "Why this rating?" */
+details.why{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+details.why summary{cursor:pointer;list-style:none;font-weight:600;font-size:14px;color:var(--ink);display:flex;justify-content:space-between}
+details.why summary::-webkit-details-marker{display:none}
+details.why summary::after{content:"＋";color:var(--muted)}
+details.why[open] summary::after{content:"－"}
+.factor{display:grid;grid-template-columns:84px 1fr auto;gap:4px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.factor:last-child{border-bottom:0}
+.factor .fk{font-size:13px;color:var(--muted)}
+.factor .fv{font-weight:600;font-size:14px}
+.factor .need{grid-column:2/4;font-size:12.5px;color:var(--faint)}
+.why-note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+
+/* ---------- day strip ---------- */
+.days{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:2px;margin-bottom:var(--gap);scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:0 0 min(46%,200px);scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);
+  border-top:3px solid var(--c);border-radius:14px;padding:12px}
+.day .dn{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.day .dr{font-size:17px;font-weight:700;color:var(--c);margin:2px 0}
+.day .dw{font-size:13px}
+.day .dl{font-size:12px;color:var(--faint);margin-top:4px}
+
+/* ---------- hourly ---------- */
+.hours-day{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  padding:14px 4px 6px;position:sticky;top:96px;background:var(--surface);z-index:1}
+/* hourly row: time | rating | height | wind | tide, then the limiter on its own full-width line */
+.hr{display:grid;grid-template-columns:34px minmax(0,1fr) 50px 48px 42px;gap:2px 8px;align-items:center;
+  padding:9px 10px;border-radius:12px;margin-bottom:4px;background:var(--surface-2);border-left:3px solid var(--c)}
+.hr .r b{white-space:nowrap}
+.hr .lim{grid-column:2 / -1;font-size:12px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hr.best{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
+.hr.night{opacity:.55}
+.hr .t{font-size:13px;color:var(--muted)}
+.hr .r{min-width:0}
+.hr .r b{color:var(--c);font-size:14px}
+.hr .r .lim{font-size:12px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hr .ht{font-weight:700;font-size:15px;text-align:right}
+.hr .ht span{display:block;font-size:11.5px;font-weight:500;color:var(--faint)}
+.hr .wd{font-size:14px;display:flex;align-items:center;gap:4px;justify-content:flex-end;color:var(--c)}
+.hr .wd span{color:var(--ink)}
+.hr .td{font-size:13px;text-align:right;color:var(--muted)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:6px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+
+/* ---------- swell / buoy rows ---------- */
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.row:last-child{border-bottom:0}
+.row .l{color:var(--muted)}
+.expo{display:inline-block;width:44px;height:4px;border-radius:4px;background:var(--surface-2);vertical-align:middle;margin-left:6px;overflow:hidden}
+.expo i{display:block;height:100%;background:var(--ocean)}
+.banner{border-color:color-mix(in srgb,var(--dontgo) 50%,var(--line));background:color-mix(in srgb,var(--dontgo) 8%,var(--surface));font-size:14px}
+
+/* ---------- tier table ---------- */
+.tier{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.tier:last-of-type{border-bottom:0}
+.tier dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}
+.tier dt{color:var(--faint)} .tier dd{margin:0}
+ul.other{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:13.5px}
+
+svg text{font-family:inherit}
+footer{padding:8px 0 40px;font-size:12px;color:var(--faint)}
+.err{color:var(--dontgo)}
+.skeleton{height:220px;border-radius:var(--radius);background:linear-gradient(90deg,var(--surface),var(--surface-2),var(--surface));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">SoCal <span>Surf Check</span></div>
+      <div class="settings">
+        <select id="unitH" aria-label="Height units"><option value="ft">ft</option><option value="m">m</option></select>
+        <select id="unitW" aria-label="Wind units"><option value="kt">kt</option><option value="mph">mph</option><option value="kmh">km/h</option></select>
+        <button class="icon-btn" id="refresh" aria-label="Refresh">↻</button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="app"><div class="skeleton"></div></main>
+
+<footer class="wrap">
+  <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a>
+  (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) ·
+  Tides: <a href="https://tidesandcurrents.noaa.gov/" target="_blank" rel="noopener">NOAA CO-OPS</a> ·
+  Buoys: <a href="https://www.ndbc.noaa.gov/" target="_blank" rel="noopener">NOAA NDBC</a>.<br>
+  Surf heights and ratings are this page's own estimates from model data, rated against each spot's researched criteria (spot-guide.md).
+</footer>
+
+<script>
+/* =====================================================================
+   SPOT CONFIG — edit this block to add / tune spots.
+   ---------------------------------------------------------------------
+   lat/lon      : the break (Open-Meteo picks the nearest sea grid cell)
+   facing       : compass direction the beach faces, looking out to sea.
+                  Offshore wind blows FROM facing+180.
+   swellWindow  : [direction swell comes FROM, exposure 0..1] points used
+                  to estimate how much of each offshore swell reaches the
+                  break (island / headland shadowing). Linear between points.
+   shadows      : extra cut for SHORT-period swell from an arc (islands
+                  block short period; long period wraps). Full cut ≤10 s,
+                  none ≥15 s.
+   calib        : multiply the height estimate. Lower it if the page reads
+                  bigger than what you actually see.
+   tideStation  : NOAA CO-OPS id (tidesandcurrents.noaa.gov/map)
+   buoy         : NDBC id (optional)
+   ===================================================================== */
+const SPOTS = [
+  /* ------------------------------------------------------------------
+     HOW A SPOT IS DESCRIBED
+     Geometry (used to ESTIMATE surf height from offshore model swell):
+       facing, swellWindow, shadows, calib  — see comments above.
+     criteria (used to RATE the surf): each factor lists the range(s) for
+       perfect / good / mid. Anything outside "mid" = Don't Go.
+       Ranges are inclusive [lo, hi]. dir ranges are compass degrees the
+       swell comes FROM; several ranges = any of them.
+       dir.combo     : top two swell trains each in one of these windows
+                       (different windows) → direction counts as Perfect.
+       tide.prefer   : "rising"/"falling" — the wrong direction drops a
+                       Perfect tide to Good.
+       wind.offshore : max kt for perfect/good/mid when wind is offshore or
+                       cross-offshore. Above "mid" = Don't Go (too strong).
+       wind.onshore  : max kt for good/mid when cross/onshore. Onshore is
+                       never Perfect; under 4 kt any direction = Glassy (Perfect).
+     All numbers come from spot-guide.md (research 2026-11-11). Tune them as
+     your session reports come in.
+     ------------------------------------------------------------------ */
+  {
+    id: "54th", name: "54th St, Newport",
+    lat: 33.6300, lon: -117.9560,
+    facing: 220,              // SSW-facing; offshore = NE
+    // Exposure for the HEIGHT estimate. W kept fairly high after a 2026-11-11 cam check (W 275° @12s → 4–6 ft).
+    swellWindow: [[150,0],[160,.4],[175,.9],[185,1],[210,1],[225,.85],[255,.75],[270,.7],[285,.45],[295,.15],[305,0]],
+    shadows: [{ dir: [225, 255], cut: 0.4 }],   // Catalina (~222–256°): short-period swell loses ~40%
+    calib: 1.05,
+    criteria: {
+      dir:    { combo: [[175,215],[255,285]],    // S + W combo is the classic
+                perfect: [[175,205]], good: [[165,215],[255,285]], mid: [[160,290]] },
+      period: { perfect: [13,18], good: [11,20], mid: [9,22] },
+      height: { perfect: [4,6],   good: [3,7],   mid: [2,8] },        // face ft; >8 = closeouts
+      tide:   { perfect: [2,4],   good: [1,4.5], mid: [0,5.5], prefer: "rising" },
+      wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 6, mid: 12 } },
+    },
+    rainSensitive: true,
+    tideStation: "9410580",   // Newport Bay Entrance, Corona del Mar
+    buoy: "46253",            // San Pedro South
+    notes: "Jetty-assisted beach break. Fast lefts off the north side of the groins on S swells, better rights on W swells. Minus tides go sand-sucking and closey; 5 ft+ highs get fat with backwash. Jetties hold up in light onshore better than the open beach.",
+    other: ["Short-period swell from 225–255° is shadowed by Catalina", "Very long-period S (17–20 s) can close out much of Newport", "Crowded, can be aggressive", "Poor water quality after rain"],
+  },
+  {
+    id: "malibu", name: "Malibu (1st / 2nd / 3rd Point)",
+    lat: 34.0353, lon: -118.6785,
+    facing: 190,              // S-facing right point; offshore = N/NE (NW is side-offshore)
+    swellWindow: [[145,0],[160,.5],[180,.9],[190,1],[225,1],[240,.8],[255,.55],[270,.35],[285,.15],[300,0]],
+    shadows: [{ dir: [240, 300], cut: 0.4 }],   // short-period W wraps poorly around Pt Dume
+    calib: 0.75,
+    criteria: {
+      dir:    { perfect: [[185,225]], good: [[175,240]], mid: [[160,270]] },  // NW >285° mostly blocked
+      period: { perfect: [15,22], good: [13,22], mid: [10,22] },             // points connect on 15 s+
+      height: { perfect: [4,8],   good: [3,8],   mid: [1.5,10] },
+      tide:   { perfect: [1.5,4], good: [1,4.5], mid: [0,5.5], prefer: "falling" },
+      wind:   { offshore: { perfect: 8, good: 12, mid: 18 }, onshore: { good: 5, mid: 10 } },
+    },
+    sections: [
+      { name: "1st Pt", minFt: 1.5 },                               // works all tides
+      { name: "2nd Pt", minFt: 3, minTide: 1.0 },                   // unmakeable on low tide
+      { name: "3rd Pt", minFt: 3.5, dir: [175, 240] },
+      { name: "Connecting", minFt: 6, minPeriod: 15, dir: [180, 230] },
+    ],
+    rainSensitive: true,      // lagoon outflow
+    tideStation: "9410840",   // Santa Monica
+    buoy: "46268",            // Topanga Nearshore
+    notes: "Cobblestone right point. 1st Pt is the soft, consistent longboard wall; 2nd is short and hollow; 3rd is the fastest outside section. High tide (5 ft+) fills in and fats out.",
+    other: ["2nd Pt unmakeable on low tide", "Points connect at ~6 ft+ on 15 s+ S/SSW", "Lagoon sand can create a closeout section mid-point", "Ultra crowded", "Stay out ~72 h after rain (lagoon outflow)"],
+  },
+  {
+    id: "elporto", name: "El Porto, Manhattan Beach",
+    lat: 33.8990, lon: -118.4195,
+    facing: 250,              // WSW-facing; offshore = E/ENE
+    swellWindow: [[190,0],[200,.35],[215,.55],[235,.75],[250,.9],[265,1],[295,1],[305,.7],[315,.3],[325,0]],
+    calib: 1.1,               // 2026-11-11: was reading 3–4 ft vs 4–6 ft on Surfline's cam
+    criteria: {
+      // Perfect ONLY on a W/WNW + SSW/SW combo — a single direction walls up.
+      dir:    { combo: [[265,295],[200,225]], perfect: [], good: [[215,305]], mid: [[200,310]] },
+      period: { perfect: [13,17], good: [11,18], mid: [9,20] },
+      height: { perfect: [5,8],   good: [4,8],   mid: [3,10] },
+      tide:   { perfect: [1.5,3.5], good: [1,4.5], mid: [0,5.5], prefer: "rising" },
+      // "Even a light onshore ruins it" → strict onshore limits; very strong offshore is hard to paddle into.
+      wind:   { offshore: { perfect: 10, good: 12, mid: 20 }, onshore: { good: 4, mid: 9 } },
+    },
+    comboNeeded: true,        // no combo + >6 ft → size capped at Mid ("Great Wall of El Porto")
+    rainSensitive: true,
+    tideStation: "9410840",   // Santa Monica
+    buoy: "46221",            // Santa Monica Bay
+    notes: "Open sandbar beach break and the South Bay's swell magnet — usually 1–2 ft bigger than neighbours. Look for the 'holes' between closeouts. Sea breeze usually by late morning. Rippy on low tide.",
+    other: ["Single-direction swell = closeouts; combos make the peaks", "Sandbars shift (beach nourishment has hurt it before)", "Busy when good, little localism", "Storm-drain runoff after rain"],
+  },
+];
+
+/* Public CORS relay used ONLY for NDBC buoy text files (NDBC sends no CORS
+   header). Set to "" to skip it. */
+const BUOY_PROXY = "https://api.allorigins.win/raw?url=";
+const TZ = "America/Los_Angeles";
+const DAYS = 3;
+</script>
+
+<script>
+/* =====================================================================
+   RATING MODEL
+   ---------------------------------------------------------------------
+   Each factor is placed in a tier using the spot's researched criteria:
+     3 Perfect · 2 Good · 1 Mid / Fun · 0 Don't Go
+   Tiers become points (PTS). The overall score is mostly the WORST
+   factor (one bad factor ruins a session), plus a weighted average of
+   all of them:
+       score = 0.7 × min(points) + 0.3 × weighted mean(points)
+   Weights put spot-specific factors (direction, wind, tide, period)
+   above raw size — a big swell can't buy a good rating on its own.
+   ===================================================================== */
+const PTS     = [1.5, 5, 7.5, 10];                 // points per tier 0..3
+const WEIGHTS = { dir: 1.2, period: 1.0, height: 0.7, tide: 1.0, wind: 1.3, water: 0.5 };
+const MIN_SHARE = 0.7;                              // how much the worst factor dominates
+const TIERS = [                                     // overall score → label
+  { min: 0, name: "Don't Go",  cls: "t0" },
+  { min: 4, name: "Mid / Fun", cls: "t1" },
+  { min: 7, name: "Good",      cls: "t2" },
+  { min: 9, name: "Perfect",   cls: "t3" },
+];
+const tierOf = score => [...TIERS].reverse().find(t => score >= t.min);
+const LEVEL  = TIERS;                               // factor level i → same names/colors
+
+/* ============================ small helpers ============================ */
+const $ = s => document.querySelector(s);
+const store = { get(k,d){ try{ return localStorage.getItem(k) ?? d; }catch{ return d; } }, set(k,v){ try{ localStorage.setItem(k,v); }catch{} } };
+const prefs = { h: store.get("surf.h","ft"), w: store.get("surf.w","kt"), spot: store.get("surf.spot", SPOTS[0].id) };
+const M2FT = 3.28084;
+const fmtH = m => m == null ? "–" : prefs.h === "ft" ? (m*M2FT).toFixed(1) : m.toFixed(1);
+const hU = () => prefs.h;
+const fmtW = kt => kt == null ? "–" : Math.round(prefs.w === "kt" ? kt : prefs.w === "mph" ? kt*1.15078 : kt*1.852);
+const wU = () => prefs.w === "kmh" ? "km/h" : prefs.w;
+const fmtRange = (loFt, hiFt) => {                  // surf range, input in feet
+  const f = prefs.h === "ft" ? v => Math.max(0, Math.round(v)) : v => Math.max(0, Math.round(v/M2FT*10)/10);
+  const a = f(loFt), b = f(hiFt); return a === b ? `${a}` : `${a}–${b}`;
+};
+const COMPASS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const compass = d => d == null ? "–" : COMPASS[Math.round(((d%360)+360)%360/22.5)%16];
+const angDiff = (a,b) => { const d = Math.abs(((a-b)%360+360)%360); return d > 180 ? 360-d : d; };
+const inR   = (v, r) => !!r && v >= r[0] && v <= r[1];
+const inAny = (v, rs) => (rs || []).some(r => inR(v, r));
+const rangesTxt = (rs, u="") => rs && rs.length ? rs.map(r => `${r[0]}–${r[1]}${u}`).join(" or ") : "—";
+
+/* Small arrow icon pointing the way the wind/swell is TRAVELLING (from + 180). */
+const arrowIcon = (fromDeg, size=14) => fromDeg == null ? "" :
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="transform:rotate(${(fromDeg+180)%360}deg);flex:none" aria-hidden="true">
+     <path d="M12 3 L19 19 L12 15 L5 19 Z" fill="currentColor"/></svg>`;
+
+/* Times: everything is keyed by local-LA "YYYY-MM-DDTHH" strings so the page
+   is correct no matter what timezone the phone is in. */
+function laNowKey(){
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",hourCycle:"h23"}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return `${p.year}-${p.month}-${p.day}T${p.hour === "24" ? "00" : p.hour}`;
+}
+const keyOf = s => s.slice(0,13).replace(" ","T");
+const addH  = (k, n=1) => new Date(Date.UTC(+k.slice(0,4), +k.slice(5,7)-1, +k.slice(8,10), +k.slice(11,13)+n)).toISOString().slice(0,13);
+const hourLabel = k => { const h = +k.slice(11,13); return h===0?"12a":h<12?`${h}a`:h===12?"12p":`${h-12}p`; };
+const clock = s => { const h = +s.slice(11,13), m = s.slice(14,16); return `${h%12||12}:${m}${h<12?"a":"p"}`; };
+const dayLabel = (k, opts={weekday:"short",month:"short",day:"numeric"}) => new Date(k.slice(0,10)+"T12:00").toLocaleDateString("en-US",opts);
+
+async function getJSON(url){
+  const r = await fetch(url);
+  if(!r.ok) throw new Error(`${r.status} from ${new URL(url).host}`);
+  return r.json();
+}
+
+/* ============================ data loading ============================ */
+const cache = {};
+async function loadSpot(spot){
+  const marineVars = ["wave_height","wave_period",
+    "swell_wave_height","swell_wave_direction","swell_wave_period",
+    "secondary_swell_wave_height","secondary_swell_wave_direction","secondary_swell_wave_period",
+    "wind_wave_height","wind_wave_direction","wind_wave_period","sea_surface_temperature"].join(",");
+  const tz = encodeURIComponent(TZ);
+  const marineURL = `https://marine-api.open-meteo.com/v1/marine?latitude=${spot.lat}&longitude=${spot.lon}&hourly=${marineVars}&timezone=${tz}&forecast_days=${DAYS+1}&cell_selection=sea`;
+  // past_days=3 gives the last 72 h of rain for the water-quality factor
+  const wxURL = `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m&daily=sunrise,sunset,precipitation_sum&precipitation_unit=inch&past_days=3&wind_speed_unit=kn&temperature_unit=fahrenheit&timezone=${tz}&forecast_days=${DAYS+1}`;
+  const today = laNowKey().slice(0,10).replace(/-/g,"");
+  const tideBase = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&datum=MLLW&station=${spot.tideStation}&time_zone=lst_ldt&units=english&format=json&application=surf_dashboard&begin_date=${today}&range=${(DAYS+1)*24}`;
+  const [marine, wx, tideH, tideHL, buoy] = await Promise.all([
+    getJSON(marineURL), getJSON(wxURL),
+    getJSON(tideBase+"&interval=h").catch(e=>({error:e.message})),
+    getJSON(tideBase+"&interval=hilo").catch(e=>({error:e.message})),
+    loadBuoy(spot.buoy),
+  ]);
+  return { marine, wx, tideH, tideHL, buoy };
+}
+
+async function loadBuoy(id){
+  if(!id) return null;
+  const url = `https://www.ndbc.noaa.gov/data/realtime2/${id}.txt`;
+  let txt = null;   // short timeouts: a slow buoy never holds up the forecast
+  try { const r = await fetch(url, { signal: AbortSignal.timeout(3000) }); if(r.ok) txt = await r.text(); } catch {}
+  if(!txt && BUOY_PROXY){
+    try { const r = await fetch(BUOY_PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(6000) }); if(r.ok) txt = await r.text(); } catch {}
+  }
+  if(!txt) return { id, error: "not reachable from the browser right now" };
+  const lines = txt.trim().split("\n");
+  const head = lines[0].replace(/^#/,"").trim().split(/\s+/);
+  const n = v => (v === "MM" || v == null) ? null : +v;
+  for(const line of lines.slice(2)){
+    const c = line.trim().split(/\s+/); const o = {}; head.forEach((h,i)=>o[h]=c[i]);
+    if(n(o.WVHT) == null) continue;
+    return { id, time: new Date(Date.UTC(+o.YY, +o.MM-1, +o.DD, +o.hh, +o.mm)),
+      hs: n(o.WVHT), dpd: n(o.DPD), apd: n(o.APD), mwd: n(o.MWD), wtmp: n(o.WTMP) };
+  }
+  return { id, error: "no recent wave data" };
+}
+
+/* ============================ surf height estimate ============================
+   1. Each swell train is scaled by the spot's exposure to its direction.
+   2. Breaking height per train, Komar & Gaughan (1972):
+        Hb = 0.39 · g^0.2 · (T · H0²)^0.4      (metres, seconds)
+      Longer period → bigger surf from the same offshore height.
+   3. Trains combined by energy (root-sum-square) × spot calib.
+   ============================================================================ */
+function exposure(spot, dir){
+  if(dir == null) return 0;
+  const w = spot.swellWindow;
+  for(let i=0;i<w.length-1;i++){
+    const [d0,f0] = w[i], [d1,f1] = w[i+1];
+    if(dir >= d0 && dir <= d1) return f0 + (f1-f0)*(dir-d0)/(d1-d0);
+  }
+  return 0;
+}
+const breaker = (H, T) => (H>0 && T>0) ? 0.39 * Math.pow(9.81,0.2) * Math.pow(T*H*H, 0.4) : 0;
+
+/* ============================ rate one hour ============================ */
+function analyseHour(spot, m, i, wind, tide, trend, rain72){
+  const C = spot.criteria;
+
+  // ---- swell trains → estimated face height ----
+  const trains = [
+    { kind:"Primary",    H:m.swell_wave_height[i],             T:m.swell_wave_period[i],             D:m.swell_wave_direction[i] },
+    { kind:"Secondary",  H:m.secondary_swell_wave_height?.[i], T:m.secondary_swell_wave_period?.[i], D:m.secondary_swell_wave_direction?.[i] },
+    { kind:"Wind waves", H:m.wind_wave_height[i],              T:m.wind_wave_period[i],              D:m.wind_wave_direction[i] },
+  ].filter(t => t.H != null && t.H > 0.05 && t.T);
+  let e2 = 0, swellE = 0, tW = 0;
+  for(const t of trains){
+    t.exp = exposure(spot, t.D);
+    for(const sh of spot.shadows || [])
+      if(inR(t.D, sh.dir)) t.exp *= 1 - sh.cut * Math.min(1, Math.max(0, (15 - t.T)/5));
+    t.hb = breaker(t.H * t.exp, t.T);
+    e2 += t.hb*t.hb; tW += t.hb*t.hb*t.T;
+    if(t.kind !== "Wind waves") swellE += t.hb*t.hb;
+  }
+  const hbFt = Math.sqrt(e2) * M2FT * (spot.calib ?? 1);
+  const surfLo = hbFt*0.8, surfHi = hbFt*1.1, surfMid = hbFt*0.95;
+  const domT = e2 ? tW/e2 : 0;                      // energy-weighted period at the break
+  const cleanRatio = e2 ? swellE/e2 : 0;            // groundswell share vs local wind waves
+  const ranked = trains.slice().sort((a,b)=>b.hb-a.hb);
+  const top = ranked[0], second = ranked[1];
+  // combo = a second train with ≥40% of the top train's breaking height, ≥30° apart
+  const combo = !!(second && second.hb >= 0.4*top.hb && angDiff(top.D, second.D) >= 30);
+
+  const F = [];   // factors: { key, name, value, level, need, note }
+  const add = (key, name, value, level, need, note) => F.push({ key, name, value, level, need, note });
+
+  // ---- 1. Swell direction (dominant train; combos can earn Perfect) ----
+  {
+    const c = C.dir; let lv = 0, note = "";
+    if(top){
+      lv = inAny(top.D, c.perfect) ? 3 : inAny(top.D, c.good) ? 2 : inAny(top.D, c.mid) ? 1 : 0;
+      if(c.combo && combo){
+        const w1 = c.combo.findIndex(r => inR(top.D, r)), w2 = c.combo.findIndex(r => inR(second.D, r));
+        if(w1 >= 0 && w2 >= 0 && w1 !== w2){ lv = 3; note = "combo swell"; }
+      }
+    }
+    const need = lv === 3 ? "" : lv === 2 ? `Perfect: ${rangesTxt(c.perfect,"°")}${c.combo ? ` or a ${rangesTxt([c.combo[0]],"°")} + ${rangesTxt([c.combo[1]],"°")} combo` : ""}`
+               : lv === 1 ? `Good: ${rangesTxt(c.good,"°")}` : `Mid: ${rangesTxt(c.mid,"°")}`;
+    add("dir", "Swell dir", top ? `${compass(top.D)} ${Math.round(top.D)}°${combo ? ` + ${compass(second.D)}` : ""}` : "–", lv, need, note);
+  }
+  // ---- 2. Period (energy-weighted, at the break) ----
+  {
+    const c = C.period; let lv = inR(domT,c.perfect)?3 : inR(domT,c.good)?2 : inR(domT,c.mid)?1 : 0, note = "";
+    if(cleanRatio < 0.5 && lv > 1){ lv = 1; note = "mostly local wind waves"; }
+    const need = lv === 3 ? "" : `${LEVEL[lv+1].name}: ${rangesTxt([[c.perfect,c.good,c.mid][3-(lv+1)]]," s")}`;
+    add("period", "Period", `${domT.toFixed(0)} s`, lv, need, note);
+  }
+  // ---- 3. Size (estimated face height) ----
+  {
+    const c = C.height; let lv = inR(surfMid,c.perfect)?3 : inR(surfMid,c.good)?2 : inR(surfMid,c.mid)?1 : 0, note = "";
+    if(surfMid > c.mid[1]) note = "too big / closing out";
+    else if(surfMid < c.mid[0]) note = "too small";
+    if(spot.comboNeeded && !combo && surfMid > 6 && lv > 1){ lv = 1; note = "single-direction swell walls up"; }
+    const need = lv === 3 ? "" : `${LEVEL[lv+1].name}: ${rangesTxt([[c.perfect,c.good,c.mid][3-(lv+1)]]," ft")}`;
+    add("height", "Size", `${fmtRange(surfLo, surfHi)} ${hU()}`, lv, need, note);
+  }
+  // ---- 4. Tide (ft MLLW + preferred direction) ----
+  if(tide != null){
+    const c = C.tide; let lv = inR(tide,c.perfect)?3 : inR(tide,c.good)?2 : inR(tide,c.mid)?1 : 0, note = "";
+    const wrongWay = (c.prefer === "rising" && trend === "↓") || (c.prefer === "falling" && trend === "↑");
+    if(lv === 3 && wrongWay){ lv = 2; note = `prefers ${c.prefer}`; }
+    if(lv < 3) note = note || (tide > c.perfect[1] ? "too high" : "too low");
+    const need = lv === 3 ? "" : lv === 2 ? `Perfect: ${rangesTxt([c.perfect]," ft")}${c.prefer ? `, ${c.prefer}` : ""}` : `${LEVEL[lv+1].name}: ${rangesTxt([[c.perfect,c.good,c.mid][3-(lv+1)]]," ft")}`;
+    add("tide", "Tide", `${tide.toFixed(1)} ft ${trend}`, lv, need, note);
+  }
+  // ---- 5. Wind relative to the beach ----
+  let windCls = "w-cross", windTag = "–";
+  if(wind.spd != null && wind.dir != null){
+    const c = C.wind, k = wind.spd;
+    const rel = angDiff(wind.dir, (spot.facing+180)%360);     // 0° = dead offshore
+    const offside = rel <= 80;                                // offshore or cross-offshore
+    windTag = k < 4 ? "Glassy" : rel <= 45 ? "Offshore" : rel <= 80 ? "Cross-off" : rel <= 110 ? "Cross-shore" : rel <= 135 ? "Cross-on" : "Onshore";
+    windCls = k < 4 || offside ? "w-off" : rel <= 110 ? "w-cross" : "w-on";
+    let lv, need;
+    if(k < 4){ lv = 3; need = ""; }
+    else if(offside){
+      lv = k <= c.offshore.perfect ? 3 : k <= c.offshore.good ? 2 : k <= c.offshore.mid ? 1 : 0;
+      need = lv === 3 ? "" : `${LEVEL[lv+1].name}: offshore ≤${[c.offshore.perfect,c.offshore.good,c.offshore.mid][3-(lv+1)]} kt`;
+    } else {
+      lv = k <= c.onshore.good ? 2 : k <= c.onshore.mid ? 1 : 0;
+      need = lv === 2 ? "Perfect: offshore or glassy (<4 kt)" : `${LEVEL[lv+1].name}: onshore ≤${lv === 1 ? c.onshore.good : c.onshore.mid} kt`;
+    }
+    add("wind", "Wind", `${fmtW(k)} ${wU()} ${compass(wind.dir)}`, lv, need, windTag.toLowerCase());
+  }
+  // ---- 6. Water quality (rain in the last 72 h) ----
+  if(spot.rainSensitive && rain72 != null){
+    const lv = rain72 >= 0.25 ? 0 : rain72 >= 0.1 ? 1 : 3;
+    add("water", "Water", rain72 >= 0.01 ? `${rain72.toFixed(2)}" rain / 72 h` : "No recent rain", lv, lv === 3 ? "" : "Wait ~72 h after rain", lv < 3 ? "runoff risk" : "");
+  }
+
+  // ---- combine ----
+  const pts = F.map(f => PTS[f.level]);
+  const minP = Math.min(...pts);
+  const wSum = F.reduce((s,f)=>s+WEIGHTS[f.key],0);
+  const mean = F.reduce((s,f)=>s+WEIGHTS[f.key]*PTS[f.level],0) / wSum;
+  const score = MIN_SHARE*minP + (1-MIN_SHARE)*mean;
+  const minLv = Math.min(...F.map(f=>f.level));
+  const limiters = F.filter(f => f.level === minLv && minLv < 3).sort((a,b)=>WEIGHTS[b.key]-WEIGHTS[a.key]);
+  // what a swell-size-only rating would say (size + period, nothing else)
+  const fz = k => F.find(f=>f.key===k);
+  const swellOnly = (PTS[fz("height").level] + PTS[fz("period").level]) / 2;
+
+  const sections = (spot.sections||[]).map(sec => ({
+    name: sec.name,
+    on: surfMid >= sec.minFt
+      && (!sec.dir || (top && inR(top.D, sec.dir)))
+      && (sec.minTide == null || (tide != null && tide >= sec.minTide))
+      && (sec.minPeriod == null || domT >= sec.minPeriod),
+  }));
+
+  return { trains, surfLo, surfHi, surfMid, domT, combo, factors: F, score, tier: tierOf(score), limiters, swellOnly, sections, windCls, windTag };
+}
+
+/* ============================ build the 72-h model ============================ */
+function build(spot, raw){
+  const m = raw.marine.hourly, w = raw.wx.hourly;
+  const wIdx = {}; w.time.forEach((t,i)=>wIdx[keyOf(t)]=i);
+  const tide = {}; (raw.tideH.predictions||[]).forEach(p=>tide[keyOf(p.t)] = +p.v);
+  const sun = {}; raw.wx.daily.time.forEach((d,i)=>sun[d] = [keyOf(raw.wx.daily.sunrise[i]), keyOf(raw.wx.daily.sunset[i])]);
+  const now = laNowKey(), today = now.slice(0,10);
+  const rain72 = raw.wx.daily.time.reduce((s,day,i) => day <= today ? s + (raw.wx.daily.precipitation_sum?.[i] || 0) : s, 0);
+
+  const hours = [];
+  m.time.forEach((t,i)=>{
+    const k = keyOf(t);
+    if(k < now || hours.length >= DAYS*24) return;
+    const j = wIdx[k];
+    const wind = { spd: w.wind_speed_10m?.[j], dir: w.wind_direction_10m?.[j], gust: w.wind_gusts_10m?.[j] };
+    const td = tide[k] ?? null, nx = tide[addH(k)];
+    const trend = (td!=null && nx!=null) ? (nx>td+.05?"↑":nx<td-.05?"↓":"→") : "";
+    const sr = sun[k.slice(0,10)];
+    hours.push({ k, i, wind, tide: td, trend, air: w.temperature_2m?.[j], sst: m.sea_surface_temperature?.[i],
+      daylight: sr ? (k >= sr[0] && k <= sr[1]) : true, raw: m,
+      a: analyseHour(spot, m, i, wind, td, trend, rain72) });
+  });
+  // best 2-hour daylight window per day
+  const best = {};
+  for(let n=0;n<hours.length-1;n++){
+    const h=hours[n], h2=hours[n+1];
+    if(!h.daylight || !h2.daylight) continue;
+    const s = (h.a.score + h2.a.score)/2, d = h.k.slice(0,10);
+    if(!best[d] || s > best[d].s) best[d] = { s, k:h.k, k2:h2.k, h };
+  }
+  return { rain72, hours, best, sun, hilo: raw.tideHL.predictions||[], tideAll: raw.tideH.predictions||[], tideErr: raw.tideH.error, buoy: raw.buoy };
+}
+
+/* ============================ render ============================ */
+const pill = (lv, text) => `<span class="pill ${LEVEL[lv].cls}"><i class="dot"></i>${text ?? LEVEL[lv].name}</span>`;
+const limText = a => a.limiters.length ? a.limiters.map(f => `${f.name.toLowerCase()}${f.note ? ` (${f.note})` : ""}`).join(" & ") : "nothing — everything lines up";
+
+function tideStage(cur, d){
+  if(cur.tide == null) return { v: "–", s: "" };
+  const next = d.hilo.find(p => keyOf(p.t) > cur.k);
+  return {
+    v: `${fmtH(cur.tide/M2FT)} ${hU()} ${cur.trend}`,
+    s: next ? `${next.type === "H" ? "High" : "Low"} ${clock(next.t)}` : "",
+    stage: next ? (next.type === "H" ? "Rising" : "Falling") : "",
+  };
+}
+
+function render(spot, d){
+  const cur = d.hours[0], a = cur.a, T = a.tier, ts = tideStage(cur, d);
+  const top = a.trains.slice().sort((x,y)=>y.hb-x.hb)[0];
+
+  /* ---- hero ---- */
+  const hero = `
+  <section class="card hero ${T.cls}">
+    <div class="hero-top">
+      <div><div class="h" style="margin:0">${spot.name} · now ${hourLabel(cur.k)}</div>
+        <div class="rating-word">${T.name}</div></div>
+      <div class="small muted" style="text-align:right">${a.score.toFixed(1)}<span class="faint">/10</span></div>
+    </div>
+    <div class="meter"><i style="width:${a.score*10}%"></i></div>
+    <div class="size-row"><div class="size">${fmtRange(a.surfLo,a.surfHi)}<small>${hU()}</small></div>
+      <div class="small muted" style="padding-bottom:6px">${top ? `${fmtH(top.H)}${hU()} @ ${top.T.toFixed(0)}s ${compass(top.D)}` : ""}</div></div>
+    <div class="limiter ${a.limiters[0] ? LEVEL[a.limiters[0].level].cls : "t3"}">Held back by: <b>${limText(a)}</b></div>
+    <div class="stats">
+      <div class="stat ${a.windCls}"><div class="k">Wind</div><div class="v">${fmtW(cur.wind.spd)}<span class="small muted"> ${wU()}</span></div><div class="s"><span class="tag">${a.windTag}</span> ${compass(cur.wind.dir)}</div></div>
+      <div class="stat"><div class="k">Tide</div><div class="v">${ts.v}</div><div class="s">${ts.s}</div></div>
+      <div class="stat"><div class="k">Water</div><div class="v">${cur.sst!=null?Math.round(cur.sst*9/5+32)+"°":"–"}</div><div class="s">Air ${cur.air!=null?Math.round(cur.air)+"°F":"–"}</div></div>
+    </div>
+    ${a.sections.length ? `<div class="sections">${a.sections.map(s=>pill(s.on?2:0, `${s.on?"✓":"✕"} ${s.name}`)).join("")}</div>` : ""}
+    <details class="why">
+      <summary>Why this rating?</summary>
+      ${a.factors.map(f => `
+        <div class="factor">
+          <div class="fk">${f.name}</div>
+          <div class="fv">${f.value}${f.note ? ` <span class="faint small">· ${f.note}</span>` : ""}</div>
+          <div>${pill(f.level)}</div>
+          ${f.need ? `<div class="need">↑ ${f.need}</div>` : ""}
+        </div>`).join("")}
+      <p class="why-note">Score = 70% worst factor + 30% weighted average. A size-only rating would say
+        <b>${tierOf(a.swellOnly).name}</b> (${a.swellOnly.toFixed(1)}).</p>
+    </details>
+  </section>`;
+
+  /* ---- rain banner ---- */
+  const banner = spot.rainSensitive && d.rain72 >= 0.1
+    ? `<div class="card banner">⚠️ <b>${d.rain72.toFixed(2)}" of rain in the last 72 h.</b> Runoff and bacteria risk here — locals wait about 3 days.</div>` : "";
+
+  /* ---- day strip ---- */
+  const days = `<div class="days">${Object.entries(d.best).map(([day,bw]) => { const t = tierOf(bw.s), ha = bw.h.a; return `
+    <div class="day ${t.cls}"><div class="dn">${dayLabel(day,{weekday:"short"})} ${dayLabel(day,{month:"numeric",day:"numeric"})}</div>
+      <div class="dr">${t.name}</div>
+      <div class="dw">${hourLabel(bw.k)}–${hourLabel(addH(bw.k2))} · <b>${fmtRange(ha.surfLo,ha.surfHi)} ${hU()}</b></div>
+      <div class="dl">${ha.limiters.length ? "Limited by " + limText(ha) : "Everything lines up"}</div></div>`; }).join("")}</div>`;
+
+  /* ---- hourly ---- */
+  let lastDay = "", rows = "";
+  for(const h of d.hours){
+    if(!h.daylight && h !== d.hours[0]) continue;
+    const day = h.k.slice(0,10), ha = h.a;
+    if(day !== lastDay){ rows += `<div class="hours-day">${dayLabel(day)}</div>`; lastDay = day; }
+    const bw = d.best[day], isBest = bw && (h.k === bw.k || h.k === bw.k2);
+    const t1 = ha.trains.find(t=>t.kind==="Primary");
+    rows += `<div class="hr ${ha.tier.cls} ${isBest?"best":""} ${h.daylight?"":"night"}">
+      <div class="t">${hourLabel(h.k)}</div>
+      <div class="r"><b>${ha.tier.name}</b>${isBest ? ` <span class="faint small">★</span>` : ""}</div>
+      <div class="ht">${fmtRange(ha.surfLo,ha.surfHi)}<span>${t1 ? `${t1.T.toFixed(0)}s ${compass(t1.D)}` : ""}</span></div>
+      <div class="wd ${ha.windCls}">${arrowIcon(h.wind.dir)}<span>${fmtW(h.wind.spd)}</span></div>
+      <div class="td">${h.tide!=null ? `${fmtH(h.tide/M2FT)}${h.trend}` : "–"}</div>
+      <div class="lim">${ha.limiters.length ? "Limited by " + limText(ha) : "Everything lines up"}</div>
+    </div>`;
+  }
+  const hourly = `<section class="card"><div class="h">Next ${DAYS*24} hours · daylight</div>
+    <div class="legend"><span class="w-off" style="color:var(--c)">● offshore</span><span class="w-cross" style="color:var(--c)">● cross</span><span class="w-on" style="color:var(--c)">● onshore</span><span>★ best window</span><span>height ${hU()} · wind ${wU()} · tide ${hU()}</span></div>
+    ${rows}</section>`;
+
+  /* ---- swell components ---- */
+  const swell = `<section class="card"><div class="h">Swell components · model</div>
+    ${a.trains.map(t => `<div class="row"><span class="l">${t.kind}</span>
+      <span style="display:flex;align-items:center;gap:6px"><b>${fmtH(t.H)}${hU()}</b> @ ${t.T.toFixed(0)}s
+        <span style="color:var(--ocean);display:inline-flex">${arrowIcon(t.D)}</span>${compass(t.D)} ${Math.round(t.D)}°
+        <span class="expo" title="${Math.round(t.exp*100)}% reaches the break"><i style="width:${Math.round(t.exp*100)}%"></i></span></span></div>`).join("")}
+    <div class="row"><span class="l">Combined sea</span><span>${fmtH(cur.raw.wave_height[cur.i])}${hU()} @ ${cur.raw.wave_period?.[cur.i]?.toFixed(0) ?? "–"}s</span></div>
+    <div class="small faint" style="margin-top:6px">Bar = share of that swell reaching the break after island / headland shadowing.</div>
+  </section>`;
+
+  /* ---- buoy ---- */
+  const b = d.buoy;
+  const buoy = `<section class="card"><div class="h">Buoy · observed</div>${
+    !b ? `<div class="small muted">No buoy configured</div>`
+    : b.error ? `<div class="small muted">NDBC ${b.id}: ${b.error}</div>`
+    : `<div class="row"><span class="l">Waves</span><span><b>${fmtH(b.hs)}${hU()}</b> @ ${b.dpd ?? "–"}s ${compass(b.mwd)}</span></div>
+       <div class="row"><span class="l">Avg period</span><span>${b.apd ?? "–"}s</span></div>
+       <div class="row"><span class="l">Water</span><span>${b.wtmp!=null?Math.round(b.wtmp*9/5+32)+"°F":"–"}</span></div>
+       <div class="small faint" style="margin-top:6px">NDBC ${b.id} · ${b.time.toLocaleTimeString("en-US",{timeZone:TZ,hour:"numeric",minute:"2-digit"})}</div>`}</section>`;
+
+  /* ---- spot guide (from criteria) ---- */
+  const C = spot.criteria, lvlKey = ["mid","good","perfect"];
+  const tierRow = lv => {
+    if(lv === 0) return `<div class="tier"><div>${pill(0)}</div><div class="muted">Anything outside the Mid / Fun ranges${spot.rainSensitive ? `, or ≥0.25" rain in 72 h` : ""}.</div></div>`;
+    const key = lvlKey[lv-1];
+    const dir = rangesTxt(C.dir[key],"°") + (lv === 3 && C.dir.combo ? `${C.dir[key].length ? " or " : ""}${rangesTxt([C.dir.combo[0]],"°")} + ${rangesTxt([C.dir.combo[1]],"°")} combo` : "");
+    const wind = lv === 3 ? `Glassy, or offshore ≤${C.wind.offshore.perfect} kt` : `Offshore ≤${C.wind.offshore[key]} kt or onshore ≤${C.wind.onshore[key]} kt`;
+    return `<div class="tier"><div>${pill(lv)}</div><dl>
+      <dt>Swell</dt><dd>${dir}</dd><dt>Period</dt><dd>${rangesTxt([C.period[key]]," s")}</dd>
+      <dt>Size</dt><dd>${rangesTxt([C.height[key]]," ft")}</dd>
+      <dt>Tide</dt><dd>${rangesTxt([C.tide[key]]," ft")}${lv === 3 && C.tide.prefer ? `, ${C.tide.prefer}` : ""}</dd>
+      <dt>Wind</dt><dd>${wind}</dd></dl></div>`;
+  };
+  const guide = `<section class="card"><div class="h">What ${spot.name.split(",")[0].split(" (")[0]} needs</div>
+    ${[3,2,1,0].map(tierRow).join("")}
+    <p class="small muted" style="margin:12px 0 0">${spot.notes} Faces ${spot.facing}° ${compass(spot.facing)}; offshore wind blows from ${compass((spot.facing+180)%360)}.</p>
+    ${spot.other ? `<ul class="other">${spot.other.map(o=>`<li>${o}</li>`).join("")}</ul>` : ""}
+  </section>`;
+
+  $("#app").innerHTML = `
+    ${banner}${hero}${days}
+    <div class="grid2">
+      <section class="card"><div class="h">Wind vs. beach</div>${windCompass(spot, cur.wind, a)}</section>
+      <section class="card"><div class="h">Tide · NOAA ${spot.tideStation}</div>${d.tideErr ? `<div class="err small">Tide data unavailable: ${d.tideErr}</div>` : tideChart(spot, d)}</section>
+    </div>
+    ${hourly}
+    <div class="grid2">${swell}${buoy}</div>
+    ${guide}`;
+}
+
+/* Wind compass: ocean half tinted blue, land half tinted sand, shoreline across the
+   middle. Green-aqua wedge = offshore, coral wedge = onshore. The arrow comes in from
+   where the wind blows FROM, colored by how it hits this beach. */
+function windCompass(spot, wind, a){
+  const S = 220, c = S/2, R = 84;
+  const pt = (deg, r) => [c + r*Math.sin(deg*Math.PI/180), c - r*Math.cos(deg*Math.PI/180)];
+  const wedge = (center, half, r, fill, op) => {
+    const [x1,y1] = pt(center-half, r), [x2,y2] = pt(center+half, r);
+    return `<path d="M${c},${c} L${x1},${y1} A${r},${r} 0 0 1 ${x2},${y2} Z" fill="${fill}" opacity="${op}"/>`;
+  };
+  const off = (spot.facing+180)%360;
+  const [s1x,s1y] = pt(spot.facing-90, R), [s2x,s2y] = pt(spot.facing+90, R);
+  const ticks = Array.from({length:12},(_,i)=>{ const [x1,y1]=pt(i*30,R), [x2,y2]=pt(i*30,R-(i%3?4:8)); return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--faint)" stroke-width="1.5"/>`; }).join("");
+  const lbl = (deg, t) => { const [x,y] = pt(deg, R+14); return `<text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" fill="var(--muted)" font-weight="600">${t}</text>`; };
+  const [oxt,oyt] = pt(spot.facing, R*0.55), [lxt,lyt] = pt(off, R*0.55);
+  let arrow = "";
+  if(wind.dir != null){
+    const [ax,ay] = pt(wind.dir, R-2), [bx,by] = pt(wind.dir, 34);
+    arrow = `<g class="${a.windCls}" style="color:var(--c)"><line x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" stroke="currentColor" stroke-width="5" stroke-linecap="round" marker-end="url(#wh)"/></g>`;
+  }
+  return `<svg viewBox="0 0 ${S} ${S}" style="width:100%;max-width:260px;display:block;margin:0 auto" role="img" aria-label="Wind ${a.windTag} from ${compass(wind.dir)}">
+    <defs><marker id="wh" markerWidth="4" markerHeight="4" refX="2" refY="2" orient="auto"><path d="M0,0 L4,2 L0,4 Z" fill="currentColor"/></marker></defs>
+    <circle cx="${c}" cy="${c}" r="${R}" fill="var(--surface-2)"/>
+    ${wedge(spot.facing, 90, R, "var(--ocean)", .10)}${wedge(off, 90, R, "var(--cross)", .07)}
+    ${wedge(off, 45, R, "var(--offshore)", .22)}${wedge(spot.facing, 45, R, "var(--onshore)", .16)}
+    <line x1="${s1x}" y1="${s1y}" x2="${s2x}" y2="${s2y}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="${oxt}" y="${oyt+4}" text-anchor="middle" font-size="11" fill="var(--ocean)">ocean</text>
+    <text x="${lxt}" y="${lyt+4}" text-anchor="middle" font-size="11" fill="var(--cross)">land</text>
+    ${ticks}${lbl(0,"N")}${lbl(90,"E")}${lbl(180,"S")}${lbl(270,"W")}
+    ${arrow}
+    <circle cx="${c}" cy="${c}" r="28" fill="var(--surface)" stroke="var(--line)"/>
+    <text x="${c}" y="${c+3}" text-anchor="middle" font-size="20" font-weight="700" fill="var(--ink)">${fmtW(wind.spd)}</text>
+    <text x="${c}" y="${c+17}" text-anchor="middle" font-size="10" fill="var(--muted)">${wU()}</text>
+  </svg>
+  <div style="text-align:center;margin-top:6px" class="${a.windCls}"><span class="pill">${a.windTag}</span>
+    <span class="small muted"> from ${compass(wind.dir)} · gusts ${fmtW(wind.gust)} ${wU()}</span></div>`;
+}
+
+/* Tide chart: smooth curve over the next 72 h, this spot's Perfect tide band in
+   aqua, night shaded, highs/lows labelled, "now" at the left edge. */
+function tideChart(spot, d){
+  const pts = d.tideAll.map(p=>({k:keyOf(p.t), v:+p.v})).filter(p=>p.k >= d.hours[0].k).slice(0, DAYS*24);
+  if(pts.length < 2) return `<div class="small muted">No tide predictions</div>`;
+  // Phone-sized coordinate space so the 11px labels stay readable when the SVG scales.
+  const W = 380, H = 190, pl = 24, pr = 6, pt0 = 18, pb = 22;
+  const band = spot.criteria.tide.perfect;
+  const vs = pts.map(p=>p.v), lo = Math.floor(Math.min(...vs, band[0]) - .5), hi = Math.ceil(Math.max(...vs, band[1]) + .8);
+  const step = (W-pl-pr)/(pts.length-1);
+  const x = i => pl + i*step, y = v => pt0 + (hi-v)*(H-pt0-pb)/(hi-lo);
+  // night shading
+  let night = "";
+  pts.forEach((p,i)=>{ const sr = d.sun[p.k.slice(0,10)]; if(sr && (p.k < sr[0] || p.k > sr[1])) night += `<rect x="${x(i)-step/2}" y="${pt0-8}" width="${step+.6}" height="${H-pb-pt0+8}" fill="#000" opacity=".22"/>`; });
+  // smooth path (Catmull-Rom → cubic Bézier)
+  const P = pts.map((p,i)=>[x(i), y(p.v)]);
+  let path = `M${P[0][0]},${P[0][1]}`;
+  for(let i=0;i<P.length-1;i++){
+    const p0 = P[i-1]||P[i], p1 = P[i], p2 = P[i+1], p3 = P[i+2]||p2;
+    path += ` C${p1[0]+(p2[0]-p0[0])/6},${p1[1]+(p2[1]-p0[1])/6} ${p2[0]-(p3[0]-p1[0])/6},${p2[1]-(p3[1]-p1[1])/6} ${p2[0]},${p2[1]}`;
+  }
+  const area = `${path} L${P[P.length-1][0]},${H-pb} L${P[0][0]},${H-pb} Z`;
+  // grid + labels
+  let grid = "";
+  for(let v=lo; v<=hi; v+=2) grid += `<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${pl-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--faint)">${prefs.h==="ft"?v:(v/M2FT).toFixed(1)}</text>`;
+  const days = pts.map((p,i)=> p.k.endsWith("T12") ? `<text x="${x(i)}" y="${H-6}" text-anchor="middle" font-size="11" fill="var(--muted)">${dayLabel(p.k,{weekday:"short"})}</text>` : p.k.endsWith("T00") ? `<line x1="${x(i)}" x2="${x(i)}" y1="${pt0-8}" y2="${H-pb}" stroke="var(--line)"/>` : "").join("");
+  // high / low labels at their exact minute
+  const t0 = Date.UTC(+pts[0].k.slice(0,4), +pts[0].k.slice(5,7)-1, +pts[0].k.slice(8,10), +pts[0].k.slice(11,13));
+  const hl = d.hilo.map(p => {
+    const t = Date.UTC(+p.t.slice(0,4), +p.t.slice(5,7)-1, +p.t.slice(8,10), +p.t.slice(11,13), +p.t.slice(14,16));
+    const xi = pl + (t - t0)/3600e3*step; if(xi < pl+4 || xi > W-pr-4) return "";
+    const yy = y(+p.v), up = p.type === "H";
+    return `<circle cx="${xi}" cy="${yy}" r="3" fill="var(--ocean)"/><text x="${xi}" y="${up ? yy-8 : yy+15}" text-anchor="middle" font-size="10.5" fill="var(--ink)">${(+p.v).toFixed(1)}</text>`;
+  }).join("");
+  const list = d.hilo.filter(p => keyOf(p.t) >= d.hours[0].k).slice(0,6).map(p =>
+    `<div class="row"><span class="l">${p.type==="H"?"▲ High":"▼ Low"} · ${dayLabel(p.t,{weekday:"short"})}</span><span><b>${clock(p.t)}</b> · ${fmtH(+p.v/M2FT)} ${hU()}</span></div>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Tide forecast">
+    <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ocean)" stop-opacity=".35"/><stop offset="1" stop-color="var(--ocean)" stop-opacity="0"/></linearGradient></defs>
+    ${night}${grid}
+    <rect x="${pl}" y="${y(band[1])}" width="${W-pl-pr}" height="${y(band[0])-y(band[1])}" fill="var(--perfect)" opacity=".10"/>
+    <path d="${area}" fill="url(#tg)"/><path d="${path}" fill="none" stroke="var(--ocean)" stroke-width="2.5"/>
+    ${days}${hl}
+    <line x1="${P[0][0]}" x2="${P[0][0]}" y1="${pt0-8}" y2="${H-pb}" stroke="var(--ink)" stroke-width="1.5"/>
+    <circle cx="${P[0][0]}" cy="${P[0][1]}" r="5" fill="var(--ink)"/>
+  </svg>
+  <div class="small faint" style="margin:4px 0 8px">Aqua band = Perfect tide here (${band[0]}–${band[1]} ft MLLW${spot.criteria.tide.prefer ? `, ${spot.criteria.tide.prefer}` : ""}) · shaded = night</div>
+  ${list}`;
+}
+
+/* ============================ wiring ============================ */
+function tabs(){
+  $("#tabs").innerHTML = SPOTS.map(s=>`<button class="tab ${s.id===prefs.spot?"on":""}" data-id="${s.id}">${s.name}</button>`).join("");
+  document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{ prefs.spot=b.dataset.id; store.set("surf.spot",prefs.spot); tabs(); show(); });
+}
+async function show(force){
+  const spot = SPOTS.find(s=>s.id===prefs.spot) || SPOTS[0];
+  if(force || !cache[spot.id] || Date.now() - cache[spot.id].at > 20*60e3){
+    $("#app").innerHTML = `<div class="skeleton"></div>`;
+    try { cache[spot.id] = { at: Date.now(), raw: await loadSpot(spot) }; }
+    catch(e){ $("#app").innerHTML = `<div class="card err">Couldn't load data: ${e.message}</div>`; return; }
+  }
+  if(spot.id !== prefs.spot) return;
+  try { render(spot, build(spot, cache[spot.id].raw)); }
+  catch(e){ console.error(e); $("#app").innerHTML = `<div class="card err">Something went wrong drawing ${spot.name}: ${e.message}</div>`; }
+}
+for(const [id,key,sk] of [["#unitH","h","surf.h"],["#unitW","w","surf.w"]]){
+  $(id).value = prefs[key];
+  $(id).onchange = e => { prefs[key] = e.target.value; store.set(sk, prefs[key]); show(); };
+}
+$("#refresh").onclick = () => show(true);
+if(!SPOTS.some(s=>s.id===prefs.spot)) prefs.spot = SPOTS[0].id;
+tabs(); show();
+</script>
+</body>
+</html>
