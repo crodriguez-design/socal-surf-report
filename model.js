@@ -573,16 +573,19 @@ async function loadSpot(spot){
   const hrrrURL = `https://api.open-meteo.com/v1/forecast?latitude=${spot.lat}&longitude=${spot.lon}&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&models=gfs_hrrr&wind_speed_unit=kn&timezone=${tz}&forecast_days=${DAYS}`;
   const today = laNowKey().slice(0,10).replace(/-/g,"");
   const tideBase = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?product=predictions&datum=MLLW&station=${spot.tideStation}&time_zone=lst_ldt&units=english&format=json&application=surf_dashboard&begin_date=${today}&range=${(DAYS+1)*24}`;
-  const [marine, wx, tideH, tideHL, buoy, mop, mopNow, hrrr] = await Promise.all([
+  const [marine, wx, tideH, tideHL, buoy, mopE, mopG, mopNow, hrrr] = await Promise.all([
     getJSON(marineURL), getJSON(wxURL),
     getJSON(tideBase+"&interval=h").catch(e=>({error:e.message})),
     getJSON(tideBase+"&interval=hilo").catch(e=>({error:e.message})),
     shared("buoy:" + spot.buoy, () => loadBuoy(spot.buoy, spot.buoyName)),
-    loadMop(spot.mop),
+    loadMop(spot.mop, "ecmwf_fc"),        // main size forecast (ECMWF-driven)
+    loadMop(spot.mop, "forecast"),        // second opinion (GFS-driven) for forecast confidence
     loadMopNow(spot.mop),
     getJSON(hrrrURL).catch(() => null),
   ]);
-  return { marine, wx, tideH, tideHL, buoy, mop, mopNow, hrrr };
+  // Prefer the ECMWF-driven run; fall back to the default run if it's missing.
+  const mop = mopE || mopG, mopAlt = mopE ? mopG : null;
+  return { marine, wx, tideH, tideHL, buoy, mop, mopAlt, mopNow, hrrr };
 }
 
 /* Observed buoy, from CDIP (Scripps) — the same buoys NDBC republishes, but CDIP's
@@ -614,17 +617,22 @@ async function loadBuoy(id, name){
    Channel Islands shadowing and seafloor refraction, so it's a much better
    starting point for surf size than the offshore model.
    Find a point: cdip.ucsd.edu → MOP, or ask Claude for the nearest label.
-   One request per spot: 3-hourly Hs / Tp / Dp for ~10 days.
+   3-hourly Hs / Tp / Dp for ~10 days. CDIP runs it from two global models:
+     "ecmwf_fc" — driven by ECMWF. MAIN forecast since 2026-11-11: in a 4-day
+                  backtest it was within 3–9% of the Topanga and Capistrano
+                  nearshore buoys (±0.3–0.4 ft) vs 32–36% low for the default.
+     "forecast" — driven by GFS/WW3. Used as the second opinion for forecast
+                  confidence (research/accuracy-checks.md).
    ===================================================================== */
-async function loadMop(site){
+async function loadMop(site, kind = "forecast"){
   if(!site) return null;
   try {
-    const url = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${site}_forecast.nc.ascii?waveTime,waveHs,waveTp,waveDp`;
+    const url = `https://thredds.cdip.ucsd.edu/thredds/dodsC/cdip/model/MOP_alongshore/${site}_${kind}.nc.ascii?waveTime,waveHs,waveTp,waveDp`;
     const txt = await (await fetch(url, { signal: AbortSignal.timeout(10000) })).text();
     const arr = k => { const m = txt.match(new RegExp(`\\n${k}\\[\\d+\\]\\n([^\\n]+)`)); return m ? m[1].split(",").map(Number) : null; };
     const t = arr("waveTime"), hs = arr("waveHs"), tp = arr("waveTp"), dp = arr("waveDp");
     if(!t || !hs || !tp || t.length !== hs.length) return null;
-    return { site, t, hs, tp, dp };
+    return { site, kind, t, hs, tp, dp };
   } catch { return null; }
 }
 /* LA-local hour key "YYYY-MM-DDTHH" → epoch seconds (offset from the marine API) */
@@ -648,6 +656,8 @@ function mopAt(mop, ts){
 // 2026-11-11 backtest (research/accuracy-checks.md): over 4 days the raw forecast ran 32–36% low vs
 // the Topanga and Capistrano nearshore buoys while the buoy-fed nowcast was within 5–10%, so half the
 // correction is now KEPT for the rest of the forecast instead of fading to nothing.
+// (Same day the main forecast switched to CDIP's ECMWF-driven run, which tracked the buoys
+// within 3–9%, so corrections are now usually small — this mainly guards against drift.)
 const CORR = { fullH: 6, fadeH: 30, keep: 0.5, min: 0.6, max: 1.8 };
 async function loadMopNow(site){
   if(!site) return null;
@@ -847,6 +857,7 @@ function build(spot, raw){
   const rain72 = raw.wx.daily.time.reduce((s,day,i) => day <= today ? s + (raw.wx.daily.precipitation_sum?.[i] || 0) : s, 0);
   const hr = raw.hrrr?.hourly, hIdx = {}; hr?.time.forEach((t,i)=>hIdx[keyOf(t)]=i);
   const corr = mopCorrection(raw.mop, raw.mopNow);
+  const corrAlt = mopCorrection(raw.mopAlt, raw.mopNow);
 
   const hours = [];
   m.time.forEach((t,i)=>{
@@ -882,7 +893,28 @@ function build(spot, raw){
     if(dawn[d].length < 2) dawn[d].push(h);
   }
   for(const d in dawn){ const hs = dawn[d]; dawn[d] = { s: hs.reduce((x,h)=>x+h.a.score,0)/hs.length, k: hs[0].k, h: hs[0] }; }
-  return { rain72, corr, hours, best, dawn, sun, hilo: raw.tideHL.predictions||[], tideAll: raw.tideH.predictions||[], tideErr: raw.tideH.error, buoy: raw.buoy };
+  /* FORECAST CONFIDENCE per day — do the two nearshore forecasts (ECMWF- and GFS-driven)
+     agree? Each is first matched to the live buoys (removes steady bias), then we compare
+     what's left: the timing and size of swells coming and going. FCONF thresholds are the
+     average daylight-hour difference; day 3+ is never "High" (more can change). */
+  const FCONF = { high: 0.15, medium: 0.30 };
+  const fconf = {};
+  if(raw.mopAlt){
+    const off = raw.marine.utc_offset_seconds, byDay = {};
+    for(const h of hours){
+      if(!h.daylight) continue;
+      const ts = keyEpoch(h.k, off), a = mopCorrectedAt(raw.mop, corr, ts), b = mopCorrectedAt(raw.mopAlt, corrAlt, ts);
+      if(!a || !b || a.hs <= 0 || b.hs <= 0) continue;
+      (byDay[h.k.slice(0,10)] ||= []).push(Math.abs(Math.log(a.hs/b.hs)));
+    }
+    Object.keys(byDay).sort().forEach((d, i) => {
+      const v = byDay[d], spread = v.reduce((x,y)=>x+y,0)/v.length;
+      let level = spread < FCONF.high ? "high" : spread < FCONF.medium ? "medium" : "low";
+      if(i >= 2 && level === "high") level = "medium";
+      fconf[d] = { level, spread: Math.round((Math.exp(spread)-1)*100) };   // spread as ±%
+    });
+  }
+  return { rain72, corr, fconf, hours, best, dawn, sun, hilo: raw.tideHL.predictions||[], tideAll: raw.tideH.predictions||[], tideErr: raw.tideH.error, buoy: raw.buoy };
 }
 
 

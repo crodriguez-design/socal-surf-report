@@ -19,6 +19,15 @@ Average measured wave height at the buoys: 2.1–3.1 ft.
 - The buoy-fed *nowcast* was within 5–10% at the two well-matched buoys, so the app's live buoy correction (nowcast ÷ forecast) is pointed in the right direction and sized about right.
 - The correction used to fade to nothing after ~30 hours, which would leave days 2–3 about a third undersized when the forecast runs low like this. **Change made:** half of the correction is now kept for the rest of the forecast (`CORR.keep = 0.5` in model.js).
 
+## 1b. Second nearshore forecast (ECMWF-driven) — same buoys, same 4 days
+
+| Buoy | Default (GFS-driven) forecast | ECMWF-driven forecast |
+|---|---|---|
+| Topanga Nearshore | ×0.68, ±0.7 ft | **×0.91, ±0.3 ft** |
+| Capistrano Beach Nearshore | ×0.64, ±1.2 ft | **×1.03, ±0.4 ft** |
+
+**Change made:** the app now uses CDIP's ECMWF-driven nearshore run as its main size forecast, with the live buoy correction on top. The default run is kept as a second opinion: both are matched to the buoys, then compared hour by hour to give each day a **forecast confidence** (solid / fair / shaky; day 3+ is never "solid").
+
 ## 2. Wind: HRRR vs. NOAA station wind (past ~2 days, hourly)
 
 | Station | Speed bias | Speed error | Direction error | Onshore/offshore call correct | "Over 6 mph onshore" call correct |
@@ -33,6 +42,9 @@ NOAA's Los Angeles and Newport stations had no wind data in this window.
 ## 3. Spot criteria: second source
 
 Surfline's written spot guides (not their ratings) were read for 15 of the 18 new spots and used to adjust the research estimates — see `research/surfline-guides.md`.
+
+## Weekly automatic re-check
+`alerts/accuracy.mjs` re-runs checks 1 and 2 every Monday morning as part of the surf-alerts job (or `FORCE_ACCURACY=1 node alerts/check.mjs`). It opens a "⚠️ Forecast accuracy drifted" issue only if the forecast or nowcast leaves ×0.8–1.25 of the buoys, or HRRR's onshore/offshore call drops below 80%. First run (2026-11-11): all within limits; HRRR read wind 1.3–2.7 kt light, worth watching.
 
 ## What still can't be checked from data
 Face height *as surfed*, wave quality, sandbars, crowd effects. Only session logs (the app's "Log surf" button) can calibrate those.

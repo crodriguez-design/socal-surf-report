@@ -211,6 +211,7 @@ footer{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 .conf{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:5px;font-size:10.5px;font-weight:700;letter-spacing:.02em;
   text-transform:none;vertical-align:1px;border:1px solid currentColor;opacity:.85;flex:none;white-space:nowrap}
 .cf-high{color:var(--good)} .cf-med{color:var(--muted)} .cf-low{color:var(--cross)}
+.day .dfc{margin-top:6px} .day .dfc .conf{margin-left:0}
 .ov-top .conf{margin-left:auto}
 
 /* ---------- dawn patrol + crowd ---------- */
@@ -382,6 +383,9 @@ const pill = (lv, text) => `<span class="pill ${LEVEL[lv].cls}"><i class="dot"><
 /* research-confidence badge: how solid the research behind a spot's criteria is */
 const CONF = { high: { label: "High confidence", short: "High", cls: "cf-high" }, medium: { label: "Medium confidence", short: "Med", cls: "cf-med" }, lower: { label: "Lower confidence", short: "Low", cls: "cf-low" } };
 const confBadge = (spot, full) => { const c = CONF[spot.confidence?.level]; return c ? `<span class="conf ${c.cls}" title="${spot.confidence.basis}">${full ? c.label : c.short}</span>` : ""; };
+/* forecast-confidence label for a day: do the two nearshore forecasts agree? */
+const FC = { high: { t: "Forecast solid", cls: "cf-high" }, medium: { t: "Forecast fair", cls: "cf-med" }, low: { t: "Forecast shaky", cls: "cf-low" } };
+const fcTag = f => f ? `<span class="conf ${FC[f.level].cls}" title="The two nearshore forecasts differ by about ±${f.spread}% this day">${FC[f.level].t}</span>` : "";
 /* chips: one per limiting factor, colored by that factor's tier */
 const limChips = (a, max = 3) => a.limiters.length
   ? a.limiters.slice(0, max).map(f => `<span class="chip ${LEVEL[f.level].cls}">${f.name}${f.note ? ` · ${f.note}` : ""}</span>`).join("")
@@ -466,8 +470,9 @@ function render(spot, d){
           ${f.need ? `<div class="need">To move up → ${f.need}</div>` : ""}
         </div>`).join("")}
       ${spot.confidence ? `<p class="why-note"><b>${CONF[spot.confidence.level].label} in this spot's research:</b> ${spot.confidence.basis}</p>` : ""}
-      <p class="why-note">Size from: <b>${a.sizeSource === "CDIP nearshore" ? `CDIP nearshore model (point ${spot.mop})` : "offshore model estimate (CDIP nearshore unavailable)"}</b>${a.sizeCorr && Math.abs(a.sizeCorr-1) >= .03 ? `, adjusted <b>${a.sizeCorr > 1 ? "+" : "−"}${Math.round(Math.abs(a.sizeCorr-1)*100)}%</b> to match live buoy readings (fades over 24 h)` : a.sizeCorr ? ", in line with live buoy readings" : ""}.
+      <p class="why-note">Size from: <b>${a.sizeSource === "CDIP nearshore" ? `CDIP nearshore model, ${cache[spot.id]?.raw?.mop?.kind === "ecmwf_fc" ? "ECMWF-driven" : "default"} run (point ${spot.mop})` : "offshore model estimate (CDIP nearshore unavailable)"}</b>${a.sizeCorr && Math.abs(a.sizeCorr-1) >= .03 ? `, adjusted <b>${a.sizeCorr > 1 ? "+" : "−"}${Math.round(Math.abs(a.sizeCorr-1)*100)}%</b> to match live buoy readings (full strength for 6 h, then half)` : a.sizeCorr ? ", in line with live buoy readings" : ""}.
         Wind: <b>${cur.wind.model === "HRRR" ? "HRRR 3 km model" : "GFS blend"}</b>.
+        ${d.fconf?.[cur.k.slice(0,10)] ? `Today's forecast confidence: <b>${{ high: "solid", medium: "fair", low: "shaky" }[d.fconf[cur.k.slice(0,10)].level]}</b> (the two nearshore forecasts differ by about ±${d.fconf[cur.k.slice(0,10)].spread}%).` : ""}
         Score = 70% worst factor + 30% weighted average. A size-only rating would say
         <b>${tierOf(a.swellOnly).name}</b> (${a.swellOnly.toFixed(1)}).</p>
     </details>
@@ -483,7 +488,8 @@ function render(spot, d){
       <div class="dr">${t.name}</div>
       <div class="dw">Best ${hourLabel(bw.k)}–${hourLabel(addH(bw.k2))} · <b>${fmtRange(ha.surfLo,ha.surfHi)} ${hU()}</b></div>
       ${d.dawn[day] ? (() => { const dp = d.dawn[day], t2 = tierOf(dp.s); return `<div class="dp ${t2.cls}">Dawn ${hourLabel(dp.k)} · <b>${t2.name}</b> ${fmtRange(dp.h.a.surfLo, dp.h.a.surfHi)} ${hU()}</div>`; })() : ""}
-      <div class="dt">${limTags(ha)}</div></div>`; }).join("")}</div>`;
+      <div class="dt">${limTags(ha)}</div>
+      <div class="dfc">${fcTag(d.fconf?.[day])}</div></div>`; }).join("")}</div>`;
 
   /* ---- hourly (daylight only) ---- */
   let lastDay = "", rows = "";
@@ -1143,6 +1149,16 @@ async function show(force){
 }
 const redraw = force => view === "spot" ? show(force) : showOverview(force);
 window.addEventListener("online", () => redraw(true));
+/* Auto-refresh: when you come back to the app (it was in the background or the phone
+   was locked) and the data on screen is older than AUTO_REFRESH_MS, fetch fresh data.
+   Same as pulling down to refresh, just automatic. */
+const AUTO_REFRESH_MS = 10*60e3;
+document.addEventListener("visibilitychange", () => {
+  if(document.hidden || ptrBusy) return;
+  const ids = view === "spot" ? [prefs.spot] : regionSpots().map(s => s.id);
+  const oldest = Math.min(...ids.map(id => cache[id]?.at ?? 0));
+  if(Date.now() - oldest > AUTO_REFRESH_MS) redraw(true).then(() => toast("Updated")).catch(() => {});
+});
 for(const [id,key,sk] of [["#unitH","h","surf.h"],["#unitW","w","surf.w"]]){
   $(id).value = prefs[key];
   $(id).onchange = e => { prefs[key] = e.target.value; store.set(sk, prefs[key]); redraw(); };
