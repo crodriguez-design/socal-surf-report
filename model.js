@@ -168,7 +168,7 @@ const SPOTS = [
       dir:    { perfect: [[260,285]], good: [[250,295]], mid: [[150,305]] },
       period: { perfect: [12,16], good: [10,18], mid: [8,20] },
       height: { perfect: [4,8], good: [3,10], mid: [2,14] },
-      tide:   { perfect: [1,3.5], good: [0,4.5], mid: [-1,5.5], prefer: "rising" },
+      tide:   { perfect: [0.5,3], good: [0,4], mid: [-1,5.5], prefer: "rising" },   // Surfline: low to medium
       wind:   { offshore: { perfect: 12, good: 20, mid: 30 }, onshore: { good: 6, mid: 12 } },
     },
     rainSensitive: true, crowd: "high",
@@ -185,8 +185,8 @@ const SPOTS = [
     criteria: {
       dir:    { perfect: [[258,285]], good: [[250,295]], mid: [[150,305]] },
       period: { perfect: [11,15], good: [9,17], mid: [7,20] },
-      height: { perfect: [3,5], good: [2,7], mid: [1.5,9] },
-      tide:   { perfect: [1,3.5], good: [0,4.5], mid: [-1,6], prefer: "rising" },
+      height: { perfect: [4,7], good: [3,8], mid: [1.5,10] },      // Surfline: head high and above
+      tide:   { perfect: [0.5,3], good: [0,4], mid: [-1,6], prefer: "rising" },   // Surfline: low to medium
       wind:   { offshore: { perfect: 12, good: 18, mid: 28 }, onshore: { good: 6, mid: 12 } },
     },
     rainSensitive: true, crowd: "high",
@@ -201,10 +201,10 @@ const SPOTS = [
     shadows: [{ dir: [205,252], cut: 0.35 }, { dir: [285,315], cut: 0.5 }],
     calib: 0.85, mop: "VE414", mopCalib: 1.0,
     criteria: {
-      dir:    { perfect: [[160,195],[260,280]], good: [[150,280]], mid: [[135,295]] },   // S or W both work
+      dir:    { combo: [[160,225],[250,295]], perfect: [[160,195],[260,280]], good: [[150,285]], mid: [[135,295]] },   // Surfline: S/SW + W combo
       period: { perfect: [12,17], good: [9,18], mid: [6,20] },
-      height: { perfect: [3,5], good: [2,6], mid: [1.5,8] },
-      tide:   { perfect: [1.5,4], good: [0.5,5], mid: [-0.5,6], prefer: "rising" },
+      height: { perfect: [4,7], good: [3,8], mid: [1.5,9] },       // Surfline: shoulder high to a couple feet overhead
+      tide:   { perfect: [1,3], good: [0,4.5], mid: [-0.5,6], prefer: "rising" },   // Surfline: low to medium
       wind:   { offshore: { perfect: 10, good: 15, mid: 25 }, onshore: { good: 5, mid: 10 } },
     },
     rainSensitive: true, crowd: "medium",
@@ -221,9 +221,9 @@ const SPOTS = [
     shadows: [{ dir: [250,275], cut: 0.5 }],                                    // Anacapa / Santa Cruz
     calib: 0.85, mop: "VE020", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
     criteria: {
-      dir:    { perfect: [[270,295]], good: [[200,295]], mid: [[175,305]] },
+      dir:    { perfect: [[230,285]], good: [[170,295]], mid: [[160,305]] },   // Surfline: W, SW, S, SSE
       period: { perfect: [13,18], good: [11,20], mid: [9,22] },
-      height: { perfect: [4,6], good: [3,7], mid: [2,9] },
+      height: { perfect: [4,7], good: [3,8], mid: [2,10] },        // Surfline: waist high to double overhead
       tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5.5], prefer: null },
       wind:   { offshore: { perfect: 10, good: 15, mid: 25 }, onshore: { good: 6, mid: 12 } },
     },
@@ -239,10 +239,10 @@ const SPOTS = [
     shadows: [{ dir: [250,275], cut: 0.5 }],
     calib: 0.85, mop: "L1173", mopCalib: 1.0,
     criteria: {
-      dir:    { perfect: [[205,240]], good: [[185,250]], mid: [[170,295]] },
+      dir:    { perfect: [[200,240]], good: [[160,255]], mid: [[155,295]] },   // Surfline: SSE, S, SW, WSW
       period: { perfect: [14,18], good: [12,20], mid: [10,22] },
-      height: { perfect: [4,6], good: [3,6], mid: [2,8] },
-      tide:   { perfect: [2.5,4], good: [1.5,4.5], mid: [0.5,5.5], prefer: "rising" },
+      height: { perfect: [4,7], good: [3,7], mid: [2,9] },
+      tide:   { perfect: [2,3.5], good: [1.5,4.5], mid: [0.5,5.5], prefer: "rising" },   // Surfline: mid
       wind:   { offshore: { perfect: 10, good: 15, mid: 22 }, onshore: { good: 5, mid: 10 } },
     },
     rainSensitive: true, crowd: "high",
@@ -257,7 +257,7 @@ const SPOTS = [
     shadows: [{ dir: [250,272], cut: 0.4 }],
     calib: 0.85, mop: "L1074", mopCalib: 1.2,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
     criteria: {
-      dir:    { perfect: [[215,240],[275,300]], good: [[195,300]], mid: [[170,310]] },   // SW or NW
+      dir:    { perfect: [[205,240],[255,285]], good: [[180,300]], mid: [[165,310]] },   // SW or W (Surfline: S, SW, W)
       period: { perfect: [12,16], good: [10,18], mid: [7,20] },
       height: { perfect: [3,5], good: [3,6], mid: [2,8] },
       tide:   { perfect: [2,4], good: [1,5], mid: [-0.5,6], prefer: "rising" },
@@ -275,7 +275,7 @@ const SPOTS = [
     shadows: [{ dir: [255,285], cut: 0.6 }],                                    // Point Dume; long period wraps
     calib: 0.85, mop: "L0809", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
     criteria: {
-      dir:    { perfect: [[200,240]], good: [[185,255]], mid: [[170,285]] },
+      dir:    { perfect: [[200,240]], good: [[185,265]], mid: [[170,285]] },   // Surfline: SSW, SW, WSW, W
       period: { perfect: [14,18], good: [12,20], mid: [11,22] },
       height: { perfect: [4,7], good: [3,8], mid: [2,12] },
       tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5.5], prefer: "rising" },
@@ -333,9 +333,9 @@ const SPOTS = [
     shadows: [{ dir: [215,250], cut: 0.4 }],                                    // Catalina
     calib: 0.85, mop: "OC516", mopCalib: 1.0,
     criteria: {
-      dir:    { perfect: [[185,215]], good: [[175,240]], mid: [[160,285]] },    // S–SW (summer) side
+      dir:    { combo: [[165,225],[250,290]], perfect: [[185,215]], good: [[175,240]], mid: [[160,285]] },    // S–SW side; Surfline: S + W combo
       period: { perfect: [14,18], good: [11,20], mid: [8,22] },
-      height: { perfect: [4,6], good: [3,7], mid: [2,9] },
+      height: { perfect: [4,8], good: [3,9], mid: [2,10] },        // Surfline: shoulder high to 3 ft overhead
       tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5.5], prefer: "rising" },
       wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },   // over 6 mph onshore = Don't Go
     },
@@ -351,9 +351,9 @@ const SPOTS = [
     shadows: [{ dir: [215,250], cut: 0.4 }],
     calib: 0.85, mop: "OC514", mopCalib: 1.0,
     criteria: {
-      dir:    { perfect: [[250,280]], good: [[215,285]], mid: [[165,288]] },    // W–WNW (winter) side
+      dir:    { combo: [[165,225],[250,290]], perfect: [[250,280]], good: [[215,285]], mid: [[165,288]] },    // W–WNW side; Surfline: S + W combo
       period: { perfect: [13,17], good: [10,19], mid: [8,22] },
-      height: { perfect: [4,6], good: [3,7], mid: [2,9] },
+      height: { perfect: [4,8], good: [3,9], mid: [2,10] },        // Surfline: shoulder high to 3 ft overhead
       tide:   { perfect: [1.5,3.5], good: [0.5,4.5], mid: [-0.5,5], prefer: "rising" },
       wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },   // over 6 mph onshore = Don't Go
     },
@@ -369,10 +369,10 @@ const SPOTS = [
     shadows: [{ dir: [225,258], cut: 0.4 }],                                    // Catalina
     calib: 0.85, mop: "OC437", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
     criteria: {
-      dir:    { perfect: [[180,210]], good: [[170,225]], mid: [[160,280]] },
+      dir:    { perfect: [[170,210]], good: [[155,225]], mid: [[150,280]] },   // Surfline: SSE, S, SSW
       period: { perfect: [13,18], good: [11,20], mid: [8,22] },
-      height: { perfect: [4,7], good: [3,8], mid: [2,10] },
-      tide:   { perfect: [2,4], good: [1,5], mid: [-0.5,5.5], prefer: "rising" },
+      height: { perfect: [5,8], good: [3,9], mid: [2,10] },        // Surfline: head high plus
+      tide:   { perfect: [2,3.5], good: [1,4.5], mid: [-0.5,5.5], prefer: "rising" },   // Surfline: mid
       wind:   { offshore: { perfect: 10, good: 15, mid: 20 }, onshore: { good: 4, mid: 5.2 } },   // your Newport rule: over 6 mph onshore = Don't Go
     },
     rainSensitive: true, crowd: "medium",
@@ -387,10 +387,10 @@ const SPOTS = [
     shadows: [{ dir: [205,220], cut: 0.7 }],                                    // San Clemente Island
     calib: 0.85, mop: "OC381", mopCalib: 0.8,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
     criteria: {
-      dir:    { perfect: [[180,205]], good: [[172,212]], mid: [[165,220]] },
+      dir:    { perfect: [[175,215]], good: [[160,225]], mid: [[155,230]] },   // Surfline: SW, SSW, S, SSE
       period: { perfect: [15,20], good: [14,21], mid: [12,22] },                // under ~12 s the wedge doesn't form
-      height: { perfect: [8,18], good: [6,20], mid: [4,25] },
-      tide:   { perfect: [2.5,4], good: [1.5,5], mid: [0.5,6], prefer: "rising" },
+      height: { perfect: [8,18], good: [6,20], mid: [4,25] },      // Surfline: overhead to 3x+ overhead
+      tide:   { perfect: [1,3.5], good: [0.5,4.5], mid: [-0.5,6], prefer: "rising" },   // Surfline: low to medium
       wind:   { offshore: { perfect: 8, good: 12, mid: 18 }, onshore: { good: 4, mid: 5.2 } },   // your Newport rule
     },
     rainSensitive: true, crowd: "high",
@@ -422,10 +422,10 @@ const SPOTS = [
     shadows: [{ dir: [228,248], cut: 0.4 }, { dir: [260,278], cut: 0.5 }],     // San Clemente Is.; Catalina
     calib: 0.85, mop: "D1208", mopCalib: 1.2,   /* 2026-11-11 size check vs Surfline (size only), capped 0.7–1.25 */
     criteria: {
-      dir:    { combo: [[265,290],[180,215]], perfect: [[265,290]], good: [[200,295]], mid: [[170,305]] },   // W–WNW, or S + WNW combo
+      dir:    { combo: [[265,290],[180,215]], perfect: [[190,230],[265,290]], good: [[180,295]], mid: [[170,305]] },   // Surfline: S, SW; also W, WNW
       period: { perfect: [13,18], good: [11,20], mid: [8,22] },
       height: { perfect: [4,8], good: [3,10], mid: [2,12] },
-      tide:   { perfect: [0.5,3], good: [0,4], mid: [-1,5], prefer: "rising" },
+      tide:   { perfect: [1,3.5], good: [0,4.5], mid: [-1,5.5], prefer: "rising" },   // Surfline: medium-low to medium-high
       wind:   { offshore: { perfect: 12, good: 18, mid: 25 }, onshore: { good: 5, mid: 10 } },
     },
     rainSensitive: true, crowd: "high",
@@ -443,7 +443,7 @@ const SPOTS = [
       dir:    { combo: [[180,215],[265,295]], perfect: [[180,215]], good: [[170,230]], mid: [[160,295]] },   // S–SSW, or S + WNW combo
       period: { perfect: [14,20], good: [12,22], mid: [9,22] },
       height: { perfect: [4,8], good: [3,10], mid: [2,12] },
-      tide:   { perfect: [1.5,4], good: [0.5,5], mid: [-0.5,6], prefer: "rising" },
+      tide:   { perfect: [1,4.5], good: [0.5,5], mid: [-0.5,6], prefer: "rising" },   // Surfline: medium-low to medium-high
       wind:   { offshore: { perfect: 12, good: 18, mid: 25 }, onshore: { good: 5, mid: 10 } },
     },
     rainSensitive: true, crowd: "high",
@@ -623,7 +623,10 @@ function mopAt(mop, ts){
    high or low today. That ratio is applied to the forecast at full strength
    for CORR.fullH hours past the last nowcast, then fades to nothing by CORR.fadeH.
    ===================================================================== */
-const CORR = { fullH: 6, fadeH: 30, min: 0.6, max: 1.8 };
+// 2026-11-11 backtest (research/accuracy-checks.md): over 4 days the raw forecast ran 32–36% low vs
+// the Topanga and Capistrano nearshore buoys while the buoy-fed nowcast was within 5–10%, so half the
+// correction is now KEPT for the rest of the forecast instead of fading to nothing.
+const CORR = { fullH: 6, fadeH: 30, keep: 0.5, min: 0.6, max: 1.8 };
 async function loadMopNow(site){
   if(!site) return null;
   try {
@@ -651,7 +654,8 @@ function mopCorrectedAt(mop, corr, ts){
   const f = mopAt(mop, ts); if(!f) return null;
   if(!corr) return f;
   const hrs = (ts - corr.t0)/3600;
-  const wgt = hrs <= CORR.fullH ? 1 : hrs >= CORR.fadeH ? 0 : 1 - (hrs - CORR.fullH)/(CORR.fadeH - CORR.fullH);
+  const fade = hrs <= CORR.fullH ? 1 : hrs >= CORR.fadeH ? 0 : 1 - (hrs - CORR.fullH)/(CORR.fadeH - CORR.fullH);
+  const wgt = CORR.keep + (1 - CORR.keep)*fade;
   const k = 1 + (corr.r - 1)*wgt;
   return { ...f, hs: f.hs*k, corr: k };
 }

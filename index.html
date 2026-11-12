@@ -265,6 +265,10 @@ body.on-overview .tabs{display:none}                 /* spot tabs only on the sp
 .ov-seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:650;padding:7px 14px;border-radius:9px;cursor:pointer}
 .ov-seg button.on{background:var(--ink);color:var(--bg)}
 .ov-upd{margin:10px 2px 6px}
+.ov-meta{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ov-sort{display:inline-flex;gap:2px;padding:3px;border-radius:9px;background:var(--surface)}
+.ov-sort button{border:0;background:transparent;color:var(--faint);font:inherit;font-size:12px;font-weight:650;padding:4px 9px;border-radius:7px;cursor:pointer}
+.ov-sort button.on{background:var(--surface-2);color:var(--ink)}
 .ov-chips{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px;scrollbar-width:none}
 .ov-chips::-webkit-scrollbar{display:none}
 .ov-chips button{flex:none;border:0;border-radius:999px;padding:8px 14px;font:inherit;font-size:13.5px;font-weight:650;cursor:pointer;
@@ -759,6 +763,7 @@ let ovMode = store.get("surf.ovmode", "now");            // "now" | "dawn"
 /* Regions (like Surfline's chips). Order follows the coast north → south. */
 const REGIONS = ["Santa Barbara / Ventura", "Malibu / North LA", "South Bay", "Orange County"];
 let ovRegion = store.get("surf.region", "All");
+let ovSort = store.get("surf.sort", "best");             // "best" = best conditions on top | "coast" = north → south
 const regionSpots = () => {
   const list = ovRegion === "All" ? SPOTS : SPOTS.filter(s => s.region === ovRegion);
   // within a region: along the coast, north/west → south/east (lon − lat grows down the coast)
@@ -823,9 +828,13 @@ function overviewHTML(){
         <button data-ov="now" class="${ovMode === "now" ? "on" : ""}">Now</button>
         <button data-ov="dawn" class="${ovMode === "dawn" ? "on" : ""}">${firstDawn ? `Tomorrow ${hourLabel(firstDawn.h.k)}` : "Tomorrow AM"}</button>
       </div>
-      <div class="ov-upd faint small">${isFinite(oldest) ? `${anyOffline ? "📵 Offline · saved" : "Updated"} ${agoText(Date.now() - oldest)}` : ""}</div>
+      <div class="ov-meta"><span class="ov-upd faint small">${isFinite(oldest) ? `${anyOffline ? "📵 Offline · saved" : "Updated"} ${agoText(Date.now() - oldest)}` : ""}</span>
+        <span class="ov-sort"><button data-sort="best" class="${ovSort === "best" ? "on" : ""}">Best first</button><button data-sort="coast" class="${ovSort === "coast" ? "on" : ""}">Coast</button></span></div>
     </div>
-    ${snaps.map(card).join("")}
+    ${(ovSort === "best"
+        // best rating first (for Now / Tomorrow, whichever is showing); unloaded spots last; ties keep coast order
+        ? snaps.map((sn, i) => ({ sn, i, s: pick(sn) ? pick(sn).score : -1 })).sort((a,b) => (b.s - a.s) || (a.i - b.i)).map(x => x.sn)
+        : snaps).map(card).join("")}
     <p class="faint small" style="margin:14px 4px 0">Ratings use each spot's researched criteria — wind, tide, swell direction and period count more than size. Tap a spot for the full forecast.</p>`;
 }
 
@@ -848,6 +857,8 @@ async function showOverview(force){
 document.addEventListener("click", e => {
   const seg = e.target.closest("[data-ov]");
   if(seg){ ovMode = seg.dataset.ov; store.set("surf.ovmode", ovMode); drawOverview(); return; }
+  const srt = e.target.closest("[data-sort]");
+  if(srt){ ovSort = srt.dataset.sort; store.set("surf.sort", ovSort); drawOverview(); return; }
   const chip = e.target.closest("[data-region]");
   if(chip){ ovRegion = chip.dataset.region; store.set("surf.region", ovRegion); showOverview(); return; }
   const b = e.target.closest("[data-go]");
