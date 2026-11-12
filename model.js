@@ -33,6 +33,7 @@ const SPOTS = [
                        (different windows) → direction counts as Perfect.
        tide.prefer   : "rising"/"falling" — the wrong direction drops a
                        Perfect tide to Good.
+       confidence    : how solid the research behind this spot is — high | medium | lower — and why.
        wind.offshore : max kt for perfect/good/mid when wind is offshore or
                        cross-offshore. Above "mid" = Don't Go (too strong).
        wind.onshore  : max kt for good/mid when cross/onshore. Onshore is
@@ -42,6 +43,7 @@ const SPOTS = [
      ------------------------------------------------------------------ */
   {
     id: "54th", name: "54th St, Newport", short: "54th St", region: "Orange County",
+    confidence: { level: "high", basis: "Deep research, Surfline's spot guide, a camera size check and your own 6 mph onshore rule." },
     lat: 33.6205, lon: -117.9478,    // beach end of 54th St (was ~1.3 km off, by the river mouth)
     facing: 220,              // SSW-facing; offshore = NE
     // Exposure for the HEIGHT estimate. W kept fairly high after a 2026-11-11 cam check (W 275° @12s → 4–6 ft).
@@ -67,6 +69,7 @@ const SPOTS = [
   },
   {
     id: "malibu", name: "Malibu (1st / 2nd / 3rd Point)", short: "Malibu", region: "Malibu / North LA",
+    confidence: { level: "high", basis: "Deep research per section (1st/2nd/3rd), Surfline's spot guide and a camera size check." },
     lat: 34.0353, lon: -118.6785,
     facing: 190,              // S-facing right point; offshore = N/NE (NW is side-offshore)
     swellWindow: [[145,0],[160,.5],[180,.9],[190,1],[225,1],[240,.8],[255,.55],[270,.35],[285,.15],[300,0]],
@@ -95,6 +98,7 @@ const SPOTS = [
   },
   {
     id: "elporto", name: "El Porto, Manhattan Beach", short: "El Porto", region: "South Bay",
+    confidence: { level: "high", basis: "Deep research, Surfline's spot guide, a camera size check and your own 6 mph onshore rule." },
     lat: 33.8990, lon: -118.4195,
     facing: 250,              // WSW-facing; offshore = E/ENE
     swellWindow: [[190,0],[200,.35],[215,.55],[235,.75],[250,.9],[265,1],[295,1],[305,.7],[315,.3],[325,0]],
@@ -124,6 +128,7 @@ const SPOTS = [
   /* ---------- Santa Barbara / Ventura (inside the Channel: W swell is king; islands block most S/SW) ---------- */
   {
     id: "rincon-cove", name: "Rincon (The Cove)", short: "Rincon Cove", region: "Santa Barbara / Ventura",
+    confidence: { level: "high", basis: "Expert break map (Adam Wright), Wikipedia and several guides, plus Surfline's guide." },
     lat: 34.37290, lon: -119.47420, facing: 200,
     swellWindow: [[130,0],[150,.15],[170,.15],[195,.05],[235,.1],[250,.6],[262,1],[278,1],[288,.6],[300,.25],[315,0]],
     shadows: [{ dir: [195,250], cut: 0.3 }, { dir: [285,315], cut: 0.5 }],     // Channel Islands; Pt Conception
@@ -142,6 +147,7 @@ const SPOTS = [
   },
   {
     id: "rincon-indicator", name: "Rincon (Indicator)", short: "Indicator", region: "Santa Barbara / Ventura",
+    confidence: { level: "lower", basis: "No Surfline guide; settings inferred from Rincon research and guides that describe it only briefly." },
     lat: 34.37320, lon: -119.47950, facing: 220,
     swellWindow: [[125,0],[145,.25],[170,.25],[195,.05],[235,.15],[248,.7],[260,1],[280,1],[290,.6],[305,.25],[320,0]],
     shadows: [{ dir: [195,248], cut: 0.3 }, { dir: [285,320], cut: 0.5 }],
@@ -160,6 +166,7 @@ const SPOTS = [
   },
   {
     id: "ventura-point", name: "Ventura Point", short: "Ventura Pt", region: "Santa Barbara / Ventura",
+    confidence: { level: "medium", basis: "Several guides plus Surfline's guide; tide and wind numbers are reasoned estimates." },
     lat: 34.27380, lon: -119.30420, facing: 205,
     swellWindow: [[130,0],[145,.35],[185,.35],[195,.1],[245,.15],[255,.7],[265,1],[282,1],[292,.6],[305,.3],[320,0]],
     shadows: [{ dir: [195,252], cut: 0.3 }, { dir: [285,320], cut: 0.5 }],
@@ -178,6 +185,7 @@ const SPOTS = [
   },
   {
     id: "c-street", name: "C Street (Ventura)", short: "C Street", region: "Santa Barbara / Ventura",
+    confidence: { level: "medium", basis: "Surfline's guide plus guides that lump it with Ventura Point; its own size/tide numbers are estimates." },
     lat: 34.27330, lon: -119.29650, facing: 205,
     swellWindow: [[130,0],[145,.35],[185,.35],[195,.1],[245,.15],[255,.65],[265,1],[282,1],[292,.55],[305,.25],[320,0]],
     shadows: [{ dir: [195,252], cut: 0.3 }, { dir: [285,320], cut: 0.5 }],
@@ -196,6 +204,7 @@ const SPOTS = [
   },
   {
     id: "ventura-harbor", name: "Ventura Harbor", short: "Ventura Harbor", region: "Santa Barbara / Ventura",
+    confidence: { level: "medium", basis: "Several guides plus Surfline's guide; sources split on left vs right and best season." },
     lat: 34.24508, lon: -119.26799, facing: 240,
     swellWindow: [[125,0],[140,.4],[160,.7],[190,.7],[205,.35],[220,.15],[245,.2],[255,.7],[265,1],[280,1],[290,.5],[305,.2],[315,0]],
     shadows: [{ dir: [205,252], cut: 0.35 }, { dir: [285,315], cut: 0.5 }],
@@ -216,6 +225,7 @@ const SPOTS = [
   /* ---------- Malibu / North LA ---------- */
   {
     id: "county-line", name: "County Line", short: "County Line", region: "Malibu / North LA",
+    confidence: { level: "medium", basis: "Several guides plus Surfline's guide; island-shadow geometry is estimated." },
     lat: 34.05197, lon: -118.96087, facing: 190,
     swellWindow: [[160,0],[175,.6],[190,.9],[230,1],[250,.7],[265,.5],[280,.9],[292,.8],[305,0]],
     shadows: [{ dir: [250,275], cut: 0.5 }],                                    // Anacapa / Santa Cruz
@@ -234,6 +244,7 @@ const SPOTS = [
   },
   {
     id: "leo-carrillo", name: "Leo Carrillo", short: "Leo Carrillo", region: "Malibu / North LA",
+    confidence: { level: "medium", basis: "Several guides plus Surfline's guide; sources disagree on tide." },
     lat: 34.04400, lon: -118.93280, facing: 195,
     swellWindow: [[160,0],[175,.6],[195,1],[235,1],[255,.6],[270,.4],[285,.5],[300,0]],
     shadows: [{ dir: [250,275], cut: 0.5 }],
@@ -252,6 +263,7 @@ const SPOTS = [
   },
   {
     id: "zuma", name: "Zuma Beach", short: "Zuma", region: "Malibu / North LA",
+    confidence: { level: "medium", basis: "Several guides plus Surfline's guide; sources disagree on NW vs W exposure." },
     lat: 34.02150, lon: -118.83350, facing: 210,
     swellWindow: [[150,0],[165,.5],[185,.8],[215,1],[250,.8],[268,.6],[280,1],[300,.8],[310,0]],
     shadows: [{ dir: [250,272], cut: 0.4 }],
@@ -270,6 +282,7 @@ const SPOTS = [
   },
   {
     id: "topanga", name: "Topanga Beach", short: "Topanga", region: "Malibu / North LA",
+    confidence: { level: "medium", basis: "Several guides plus Surfline's guide; sources disagree on S vs W as best." },
     lat: 34.03700, lon: -118.58250, facing: 190,
     swellWindow: [[155,0],[170,.6],[190,1],[235,1],[255,.6],[265,.3],[285,.1],[295,0]],
     shadows: [{ dir: [255,285], cut: 0.6 }],                                    // Point Dume; long period wraps
@@ -290,6 +303,7 @@ const SPOTS = [
   /* ---------- South Bay (faces ~W; Palos Verdes blocks S swell) ---------- */
   {
     id: "burnout", name: "Burnout (Torrance)", short: "Burnout", region: "South Bay",
+    confidence: { level: "lower", basis: "No Surfline guide and its exact location was disputed between sources; settings mostly estimates." },
     lat: 33.81520, lon: -118.39180, facing: 280,
     swellWindow: [[200,0],[210,.2],[220,.5],[230,.85],[245,1],[275,1],[290,.6],[300,.25],[310,0]],
     shadows: [{ dir: [272,290], cut: 0.45 }],                                   // Channel Islands
@@ -308,6 +322,7 @@ const SPOTS = [
   },
   {
     id: "knob-hill", name: "Knob Hill (Redondo)", short: "Knob Hill", region: "South Bay",
+    confidence: { level: "lower", basis: "No Surfline guide and no dedicated break guide anywhere; settings borrowed from nearby Redondo spots." },
     lat: 33.82860, lon: -118.39140, facing: 268,
     swellWindow: [[195,0],[205,.2],[215,.55],[228,.9],[240,1],[275,1],[290,.6],[300,.25],[310,0]],
     shadows: [{ dir: [272,290], cut: 0.45 }],
@@ -328,6 +343,7 @@ const SPOTS = [
   /* ---------- Orange County ---------- */
   {
     id: "hb-north", name: "Huntington Pier, Northside", short: "HB North", region: "Orange County",
+    confidence: { level: "medium", basis: "Well covered plus Surfline's guide, but sources disagree on which pier side favors S vs W swell." },
     lat: 33.65574, lon: -118.00397, facing: 214,
     swellWindow: [[150,0],[165,.6],[180,1],[210,1],[230,.7],[255,.8],[275,.6],[285,.2],[295,0]],
     shadows: [{ dir: [215,250], cut: 0.4 }],                                    // Catalina
@@ -346,6 +362,7 @@ const SPOTS = [
   },
   {
     id: "hb-south", name: "Huntington Pier, Southside", short: "HB South", region: "Orange County",
+    confidence: { level: "medium", basis: "Well covered plus Surfline's guide, but sources disagree on which pier side favors S vs W swell." },
     lat: 33.65475, lon: -118.00291, facing: 214,
     swellWindow: [[155,0],[170,.5],[190,.9],[210,1],[230,.7],[255,1],[280,.8],[288,.3],[295,0]],
     shadows: [{ dir: [215,250], cut: 0.4 }],
@@ -364,6 +381,7 @@ const SPOTS = [
   },
   {
     id: "newport-lower", name: "Newport Lower Jetties", short: "Lower Jetties", region: "Orange County",
+    confidence: { level: "medium", basis: "Guides plus Surfline's guide; numbers mostly estimates; your Newport onshore rule applied." },
     lat: 33.61556, lon: -117.93676, facing: 215,
     swellWindow: [[150,0],[165,.7],[180,1],[215,1],[230,.6],[258,.7],[275,.5],[282,.1],[290,0]],
     shadows: [{ dir: [225,258], cut: 0.4 }],                                    // Catalina
@@ -382,6 +400,7 @@ const SPOTS = [
   },
   {
     id: "wedge", name: "The Wedge", short: "The Wedge", region: "Orange County",
+    confidence: { level: "medium", basis: "Well documented spot plus Surfline's guide; exact size/tide tiers are estimates." },
     lat: 33.59330, lon: -117.88270, facing: 185,
     swellWindow: [[150,0],[165,.5],[180,1],[205,1],[220,.4],[235,0]],              // W swell does nothing here
     shadows: [{ dir: [205,220], cut: 0.7 }],                                    // San Clemente Island
@@ -400,6 +419,7 @@ const SPOTS = [
   },
   {
     id: "newport-point", name: "Newport Point", short: "Newport Point", region: "Orange County",
+    confidence: { level: "medium", basis: "Expert break map (Adam Wright) plus Surfline's guide; it works so rarely there's little to verify against." },
     lat: 33.60470, lon: -117.92520, facing: 205,
     swellWindow: [[145,0],[155,.6],[165,1],[185,1],[200,.6],[215,.3],[230,0]],
     calib: 0.85, mop: "OC422", mopCalib: 1.0,
@@ -417,6 +437,7 @@ const SPOTS = [
   },
   {
     id: "uppers", name: "Upper Trestles", short: "Uppers", region: "Orange County",
+    confidence: { level: "high", basis: "Expert break map (Adam Wright), several guides, Surfline's guide, and a nearshore buoy right next to Trestles." },
     lat: 33.38557, lon: -117.59438, facing: 225,
     swellWindow: [[160,0],[175,.6],[190,.8],[215,.85],[230,.7],[245,.6],[262,.5],[278,.55],[290,.6],[300,.35],[310,0]],
     shadows: [{ dir: [228,248], cut: 0.4 }, { dir: [260,278], cut: 0.5 }],     // San Clemente Is.; Catalina
@@ -435,6 +456,7 @@ const SPOTS = [
   },
   {
     id: "lowers", name: "Lower Trestles", short: "Lowers", region: "Orange County",
+    confidence: { level: "high", basis: "Expert break map (Adam Wright), WSL break breakdown, Surfline's guide, and a nearshore buoy right next to Trestles." },
     lat: 33.38278, lon: -117.58868, facing: 220,
     swellWindow: [[155,0],[165,.5],[175,.9],[185,1],[215,1],[230,.8],[245,.6],[262,.4],[278,.35],[292,.35],[302,.15],[310,0]],
     shadows: [{ dir: [228,248], cut: 0.4 }, { dir: [260,278], cut: 0.5 }],

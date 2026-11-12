@@ -207,6 +207,12 @@ header{padding-top:env(safe-area-inset-top)}
 .hours-day{top:calc(96px + env(safe-area-inset-top))}
 footer{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 .offline{border-color:color-mix(in srgb,var(--cross) 45%,var(--line));background:color-mix(in srgb,var(--cross) 8%,var(--surface));font-size:14px}
+/* ---------- research-confidence badge ---------- */
+.conf{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:5px;font-size:10.5px;font-weight:700;letter-spacing:.02em;
+  text-transform:none;vertical-align:1px;border:1px solid currentColor;opacity:.85;flex:none;white-space:nowrap}
+.cf-high{color:var(--good)} .cf-med{color:var(--muted)} .cf-low{color:var(--cross)}
+.ov-top .conf{margin-left:auto}
+
 /* ---------- dawn patrol + crowd ---------- */
 .day .dp{font-size:12.5px;color:var(--muted);margin-top:4px}
 .day .dp b{color:var(--c)}
@@ -373,6 +379,9 @@ footer{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 <script>
 /* ============================ render ============================ */
 const pill = (lv, text) => `<span class="pill ${LEVEL[lv].cls}"><i class="dot"></i>${text ?? LEVEL[lv].name}</span>`;
+/* research-confidence badge: how solid the research behind a spot's criteria is */
+const CONF = { high: { label: "High confidence", short: "High", cls: "cf-high" }, medium: { label: "Medium confidence", short: "Med", cls: "cf-med" }, lower: { label: "Lower confidence", short: "Low", cls: "cf-low" } };
+const confBadge = (spot, full) => { const c = CONF[spot.confidence?.level]; return c ? `<span class="conf ${c.cls}" title="${spot.confidence.basis}">${full ? c.label : c.short}</span>` : ""; };
 /* chips: one per limiting factor, colored by that factor's tier */
 const limChips = (a, max = 3) => a.limiters.length
   ? a.limiters.slice(0, max).map(f => `<span class="chip ${LEVEL[f.level].cls}">${f.name}${f.note ? ` · ${f.note}` : ""}</span>`).join("")
@@ -425,7 +434,7 @@ function render(spot, d){
   /* ---- hero: rating, plain-language summary, four glance tiles, what's holding it back ---- */
   const hero = `
   <section class="card hero ${T.cls}">
-    <div class="eyebrow">${spot.name} · now ${hourLabel(cur.k)}</div>
+    <div class="eyebrow">${spot.name} · now ${hourLabel(cur.k)} ${confBadge(spot, true)}</div>
     <div class="hero-main">
       <div><div class="rating-word">${T.name}</div><p class="summary">${summary(cur)}</p></div>
       ${scoreRing(a.score)}
@@ -456,6 +465,7 @@ function render(spot, d){
           <div>${pill(f.level)}</div>
           ${f.need ? `<div class="need">To move up → ${f.need}</div>` : ""}
         </div>`).join("")}
+      ${spot.confidence ? `<p class="why-note"><b>${CONF[spot.confidence.level].label} in this spot's research:</b> ${spot.confidence.basis}</p>` : ""}
       <p class="why-note">Size from: <b>${a.sizeSource === "CDIP nearshore" ? `CDIP nearshore model (point ${spot.mop})` : "offshore model estimate (CDIP nearshore unavailable)"}</b>${a.sizeCorr && Math.abs(a.sizeCorr-1) >= .03 ? `, adjusted <b>${a.sizeCorr > 1 ? "+" : "−"}${Math.round(Math.abs(a.sizeCorr-1)*100)}%</b> to match live buoy readings (fades over 24 h)` : a.sizeCorr ? ", in line with live buoy readings" : ""}.
         Wind: <b>${cur.wind.model === "HRRR" ? "HRRR 3 km model" : "GFS blend"}</b>.
         Score = 70% worst factor + 30% weighted average. A size-only rating would say
@@ -806,7 +816,7 @@ function overviewHTML(){
     return `<button class="ov-card ${t.cls}" data-go="${sn.s.id}">
       ${ratingBar(lv)}
       <div class="ov-body">
-        <div class="ov-top"><span class="ov-name">${sn.s.name}</span>${sn.s.id === bestId ? `<span class="ov-best">★ Best</span>` : ""}</div>
+        <div class="ov-top"><span class="ov-name">${sn.s.name}</span>${sn.s.id === bestId ? `<span class="ov-best">★ Best</span>` : ""}${confBadge(sn.s)}</div>
         <div class="ov-mid">
           <span class="ov-size">${fmtRange(a.surfLo, a.surfHi)}<small>${hU()}</small></span>
           <span class="ov-wind ${a.windCls}">${arrowIcon(h.wind.dir, 14)}<b>${fmtW(h.wind.spd)}</b><small>${wU()}</small> ${compass(h.wind.dir)}<em>${a.windTag}</em></span>
